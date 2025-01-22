@@ -122,6 +122,29 @@ WaitRetry:
             Setup.Load("SystemDebugAnim")
             Setup.Load("ToolDownloadThread")
             Setup.Load("ToolDownloadCert")
+            '初始化本地化功能
+            Dim languageHandler As New LanguageHandler
+
+            Dim defaultLanguage As String = ReadReg("Language", Nothing)
+            If defaultLanguage Is Nothing Then
+                Dim systemLanguage As String = Globalization.CultureInfo.CurrentCulture.Name
+                Dim suppoutLang As String = "zh-CN,zh-Hant,en-US" '香港、澳门、台湾、新加坡中文用户首次使用会直接设置为 en-US，繁体中文使用 zh-Hant 通用繁体，需手动切换
+                Dim suppoutLangArray() As String = Split(suppoutLang, ",")
+                Dim found As Boolean = False
+                For Each lang As String In suppoutLangArray
+                    If systemLanguage = lang Then
+                        found = True
+                        Exit For
+                    End If
+                Next
+                If Not found Then
+                    WriteReg("Language", "en-US")
+                    languageHandler.ChangeLanguage("en-US")
+                Else
+                    WriteReg("Language", systemLanguage)
+                    languageHandler.ChangeLanguage(systemLanguage)
+                End If
+            End If
             '释放资源
             SetDllDirectory(PathPure.TrimEnd("\"))
             WriteFile(PathPure & "libwebp.dll", GetResources("libwebp64"))

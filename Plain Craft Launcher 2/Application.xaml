@@ -7,11 +7,11 @@
     ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
         <ResourceDictionary>
+
             
             <!-- 本地化 -->
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Resources/Language/zh_CN.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Resources/Language/zh_CN.xaml" />
+                <ResourceDictionary Source="I18n/LanguageList.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!-- 颜色表 -->

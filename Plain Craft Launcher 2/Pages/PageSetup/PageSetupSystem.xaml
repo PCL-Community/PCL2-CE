@@ -154,23 +154,19 @@
                     </Grid>
                 </Grid>
             </local:MyCard>
-            
-            <!-- <local:MyCard x:Name="CardMain" Margin="0,15" Title="全局设置">
+
+            <local:MyCard x:Name="CardMain" Margin="0,15" Title="全局设置">
                 <StackPanel Margin="25,40,25,15">
-                    <Grid x:Name="PanMainLang" Height="28" Margin="0,0,0,10" Visibility="Collapsed">
+                    <Grid x:Name="PanMainLang" Height="28" Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Name" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" Text="语言" Margin="0,0,25,0" />
-                        <local:MyComboBox x:Name="ComboBackgroundSuit" Tag="UiBackgroundSuit" HorizontalAlignment="Left" Width="170" Grid.Column="1">
-                            <local:MyComboBoxItem Content="简体中文" Tag="zh_CN" IsSelected="True" />
-                            <local:MyComboBoxItem Content="繁體中文" Tag="zh_HK" />
-                            <local:MyComboBoxItem Content="English" Tag="en_US" />
-                        </local:MyComboBox>
+                        <local:MyComboBox x:Name="MainLang" Tag="MainLang" HorizontalAlignment="Left" Width="170" Grid.Column="1" />
                     </Grid>
                 </StackPanel>
-            </local:MyCard> -->
+            </local:MyCard>
 
             <local:MyCard Margin="0,0,0,15" Title="网络">
                 <Grid Margin="25,40,25,20">

@@ -1,6 +1,10 @@
-﻿Class PageSetupSystem
+﻿Imports System.Reflection
+Imports Newtonsoft.Json
+
+Class PageSetupSystem
 
     Private Shadows IsLoaded As Boolean = False
+    Private resourceDict As New ResourceDictionary()
 
     Private Sub PageSetupSystem_Loaded(sender As Object, e As RoutedEventArgs) Handles Me.Loaded
 
@@ -23,6 +27,27 @@
         SliderLoad()
         AniControlEnabled -= 1
 
+        '语言项初始化
+        resourceDict.Source = New Uri("I18n/LanguageList.xaml", UriKind.Relative)
+
+        Dim keys As ICollection = resourceDict.Keys
+        For Each key As Object In keys
+            MainLang.Items.Add(resourceDict(key))
+        Next
+
+        Dim languageKey As String = ReadReg("language")
+        If languageKey IsNot Nothing Then
+            Dim value As Object
+            If resourceDict.Contains(languageKey) Then
+                value = resourceDict(languageKey)
+                For i As Integer = 0 To MainLang.Items.Count - 1
+                    If MainLang.Items(i).ToString() = value.ToString() Then
+                        MainLang.SelectedIndex = i
+                        Exit For
+                    End If
+                Next
+            End If
+        End If
     End Sub
     Public Sub Reload()
 
@@ -143,6 +168,26 @@
     Private Sub CheckDebugMode_Change() Handles CheckDebugMode.Change
         If AniControlEnabled = 0 Then Hint("部分调试信息将在刷新或启动器重启后切换显示！",, False)
     End Sub
+
+    '本地化（社区功能）
+    Private Sub MainLang_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles MainLang.SelectionChanged
+        Dim selectedItem As Object = MainLang.SelectedItem
+        Dim selectedKey As String = GetKeyFromValue(resourceDict, selectedItem)
+        If selectedKey IsNot Nothing Then
+            ' 调用语言切换方法
+            Dim languageHendler As New LanguageHandler
+            languageHendler.ChangeLanguage(selectedKey)
+        End If
+    End Sub
+
+    Function GetKeyFromValue(ByVal dict As ResourceDictionary, ByVal value As Object) As String
+        For Each key As Object In dict.Keys
+            If dict(key).Equals(value) Then
+                Return key.ToString()
+            End If
+        Next
+        Return Nothing
+    End Function
 
     '自动更新
     Private Sub ComboSystemActivity_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles ComboSystemActivity.SelectionChanged
