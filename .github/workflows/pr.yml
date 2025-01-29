@@ -31,6 +31,13 @@ jobs:
               echo "::set-output name=should_close::false"
               ;;
           esac
+      - name: Debugging Information
+        if: steps.check_label.outputs.should_close == 'true'
+        env:
+          BOT_TOKEN: ${{ secrets.BOT }}
+        run: |
+          echo "Repository: ${{ github.repository }}"
+          echo "Pull Request Number: ${{ github.event.pull_number }}"
       - name: Close PR
         if: steps.check_label.outputs.should_close == 'true'
         env:
@@ -40,4 +47,5 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token $BOT_TOKEN" \
             https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_number }} \
-            -d '{"state": "closed"}'
+            -d '{"state": "closed"}' \
+            --verbose
