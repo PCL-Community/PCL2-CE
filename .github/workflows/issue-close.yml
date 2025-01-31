@@ -1,4 +1,4 @@
-name: close labeled issues
+name: Close labeled issues
 
 on:
   issues:
