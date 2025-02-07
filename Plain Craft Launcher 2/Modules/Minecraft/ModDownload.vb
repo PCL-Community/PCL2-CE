@@ -17,7 +17,7 @@
         End Try
         '检查 Json 是否标准
         If Version.JsonObject("downloads") Is Nothing OrElse Version.JsonObject("downloads")("client") Is Nothing OrElse Version.JsonObject("downloads")("client")("url") Is Nothing Then
-            Throw New Exception("底层版本 " & Version.Name & " 中无 jar 文件下载信息")
+            Throw New Exception("底层版本 " & Version.Name & " 中无 Jar 文件下载信息")
         End If
         '检查文件
         Dim Checker As New FileChecker(MinSize:=1024, ActualSize:=If(Version.JsonObject("downloads")("client")("size"), -1), Hash:=Version.JsonObject("downloads")("client")("sha1"))
@@ -201,8 +201,27 @@
         Try
             Dim Versions As JArray = Json("versions")
             If Versions.Count < 200 Then Throw New Exception("获取到的版本列表长度不足（" & Json.ToString & "）")
-            '添加 PCL 特供项
-            If File.Exists(PathTemp & "Cache\download.json") Then Versions.Merge(GetJson(ReadFile(PathTemp & "Cache\download.json")))
+            '添加 UVMC 项
+            Dim CacheFilePath As String = PathTemp & "Cache\uvmc-download.json"
+            If Not File.Exists(CacheFilePath) Then
+                Try
+                    Dim UnlistedJson As JObject = NetGetCodeByRequestRetry("https://zkitefly.github.io/unlisted-versions-of-minecraft/version_manifest.json", IsJson:=True)
+                    For Each versionuvmc As JObject In UnlistedJson("versions")
+                        If versionuvmc("type").ToString() = "pending" OrElse versionuvmc("type").ToString() = "release" Then
+                            versionuvmc("type") = "snapshot"
+                        End If
+                        If versionuvmc("id").ToString().StartsWithF("1.0.0-rc") OrElse versionuvmc("id").ToString.StartsWithF("b1.9-pre") AndAlso versionuvmc("type").ToString() = "snapshot" Then
+                            versionuvmc("type") = "old_beta"
+                        End If
+                    Next
+                    File.WriteAllText(CacheFilePath, UnlistedJson.ToString())
+                Catch ex As Exception
+                    Log("[Download] 未列出的版本官方源下载失败: " & ex.Message)
+                End Try
+            Else
+                Dim CachedJson As JObject = GetJson(ReadFile(CacheFilePath))
+                Versions.Merge(CachedJson("versions"))
+            End If
             '返回
             Loader.Output = New DlClientListResult With {.IsOfficial = True, .SourceName = "Mojang 官方源", .Value = Json}
             '解析更新提示（Release）
@@ -232,8 +251,27 @@
         Try
             Dim Versions As JArray = Json("versions")
             If Versions.Count < 200 Then Throw New Exception("获取到的版本列表长度不足（" & Json.ToString & "）")
-            '添加 PCL 特供项
-            If File.Exists(PathTemp & "Cache\download.json") Then Versions.Merge(GetJson(ReadFile(PathTemp & "Cache\download.json")))
+            '添加 UVMC 项
+            Dim CacheFilePath As String = PathTemp & "Cache\uvmc-download.json"
+            If Not File.Exists(CacheFilePath) Then
+                Try
+                    Dim UnlistedJson As JObject = NetGetCodeByRequestRetry("https://vip.123pan.cn/1821946486/unlisted-versions-of-minecraft/version_manifest.json", IsJson:=True)
+                    For Each versionuvmc As JObject In UnlistedJson("versions")
+                        If versionuvmc("type").ToString() = "pending" OrElse versionuvmc("type").ToString() = "release" Then
+                            versionuvmc("type") = "snapshot"
+                        End If
+                        If versionuvmc("id").ToString().StartsWithF("1.0.0-rc") OrElse versionuvmc("id").ToString.StartsWithF("b1.9-pre") AndAlso versionuvmc("type").ToString() = "snapshot" Then
+                            versionuvmc("type") = "old_beta"
+                        End If
+                    Next
+                    File.WriteAllText(CacheFilePath, UnlistedJson.ToString())
+                Catch ex As Exception
+                    Log("[Download] 未列出的版本镜像源下载失败: " & ex.Message)
+                End Try
+            Else
+                Dim CachedJson As JObject = GetJson(ReadFile(CacheFilePath))
+                Versions.Merge(CachedJson("versions"))
+            End If
             '检查是否有要求的版本（#5195）
             If Not String.IsNullOrEmpty(Loader.Input) Then
                 Dim Id = Loader.Input
@@ -1091,6 +1129,84 @@
 
 #End Region
 
+#Region "DlQuiltList | Quilt 列表"
+
+    Public Structure DlQuiltListResult
+        ''' <summary>
+        ''' 数据来源名称，如“Official”，“BMCLAPI”。
+        ''' </summary>
+        Public SourceName As String
+        ''' <summary>
+        ''' 是否为官方的实时数据。
+        ''' </summary>
+        Public IsOfficial As Boolean
+        ''' <summary>
+        ''' 获取到的数据。
+        ''' </summary>
+        Public Value As JObject
+    End Structure
+
+    ''' <summary>
+    ''' Quilt 列表，主加载器。
+    ''' </summary>
+    Public DlQuiltListLoader As New LoaderTask(Of Integer, DlQuiltListResult)("DlQuiltList Main", AddressOf DlQuiltListMain)
+    Private Sub DlQuiltListMain(Loader As LoaderTask(Of Integer, DlQuiltListResult))
+        Select Case Setup.Get("ToolDownloadVersion")
+            Case 0
+                DlSourceLoader(Loader, New List(Of KeyValuePair(Of LoaderTask(Of Integer, DlQuiltListResult), Integer)) From {
+                    New KeyValuePair(Of LoaderTask(Of Integer, DlQuiltListResult), Integer)(DlQuiltListOfficialLoader, 30),
+                    New KeyValuePair(Of LoaderTask(Of Integer, DlQuiltListResult), Integer)(DlQuiltListOfficialLoader, 60)
+                }, Loader.IsForceRestarting)
+            Case 1
+                DlSourceLoader(Loader, New List(Of KeyValuePair(Of LoaderTask(Of Integer, DlQuiltListResult), Integer)) From {
+                    New KeyValuePair(Of LoaderTask(Of Integer, DlQuiltListResult), Integer)(DlQuiltListOfficialLoader, 5),
+                    New KeyValuePair(Of LoaderTask(Of Integer, DlQuiltListResult), Integer)(DlQuiltListOfficialLoader, 35)
+                }, Loader.IsForceRestarting)
+            Case Else
+                DlSourceLoader(Loader, New List(Of KeyValuePair(Of LoaderTask(Of Integer, DlQuiltListResult), Integer)) From {
+                    New KeyValuePair(Of LoaderTask(Of Integer, DlQuiltListResult), Integer)(DlQuiltListOfficialLoader, 60),
+                    New KeyValuePair(Of LoaderTask(Of Integer, DlQuiltListResult), Integer)(DlQuiltListOfficialLoader, 60)
+                }, Loader.IsForceRestarting)
+        End Select
+    End Sub
+
+    ''' <summary>
+    ''' Quilt 列表，官方源。
+    ''' </summary>
+    Public DlQuiltListOfficialLoader As New LoaderTask(Of Integer, DlQuiltListResult)("DlQuiltList Official", AddressOf DlQuiltListOfficialMain)
+    Private Sub DlQuiltListOfficialMain(Loader As LoaderTask(Of Integer, DlQuiltListResult))
+        Dim Result As JObject = NetGetCodeByRequestRetry("https://meta.quiltmc.org/v3/versions", IsJson:=True)
+        Try
+            Dim Output = New DlQuiltListResult With {.IsOfficial = True, .SourceName = "Quilt 官方源", .Value = Result}
+            If Output.Value("game") Is Nothing OrElse Output.Value("loader") Is Nothing OrElse Output.Value("installer") Is Nothing Then Throw New Exception("获取到的列表缺乏必要项")
+            Loader.Output = Output
+        Catch ex As Exception
+            Throw New Exception("Quilt 官方源版本列表解析失败（" & Result.ToString & "）", ex)
+        End Try
+    End Sub
+
+    '''' <summary>
+    '''' TODO: Quilt 列表，BMCLAPI。
+    '''' </summary>
+    'Public DlQuiltListBmclapiLoader As New LoaderTask(Of Integer, DlQuiltListResult)("DlQuiltList Bmclapi", AddressOf DlQuiltListBmclapiMain)
+    'Private Sub DlQuiltListBmclapiMain(Loader As LoaderTask(Of Integer, DlQuiltListResult))
+    '    Dim Result As JObject = NetGetCodeByRequestRetry("https://bmclapi2.bangbang93.com/Quilt-meta/v2/versions", IsJson:=True)
+    '    Try
+    '        Dim Output = New DlQuiltListResult With {.IsOfficial = False, .SourceName = "BMCLAPI", .Value = Result}
+    '        If Output.Value("game") Is Nothing OrElse Output.Value("loader") Is Nothing OrElse Output.Value("installer") Is Nothing Then Throw New Exception("获取到的列表缺乏必要项")
+    '        Loader.Output = Output
+    '    Catch ex As Exception
+    '        Throw New Exception("Quilt BMCLAPI 版本列表解析失败（" & Result.ToString & "）", ex)
+    '    End Try
+    'End Sub
+
+    ''' <summary>
+    ''' QSL 列表，官方源。
+    ''' </summary>
+    Public DlQSLLoader As New LoaderTask(Of Integer, List(Of CompFile))("QSL List Loader",
+        Sub(Task As LoaderTask(Of Integer, List(Of CompFile))) Task.Output = CompFilesGet("qsl", False))
+#End Region
+
 #Region "DlMod | Mod 镜像源请求"
 
     ''' <summary>
@@ -1188,22 +1304,26 @@
                 Original.
                     Replace("https://piston-data.mojang.com", "https://bmclapi2.bangbang93.com/maven").
                     Replace("https://piston-meta.mojang.com", "https://bmclapi2.bangbang93.com/maven").
-                    Replace("https://libraries.minecraft.net", "https://bmclapi2.bangbang93.com/maven"),
+                    Replace("https://libraries.minecraft.net", "https://bmclapi2.bangbang93.com/maven").
+                    Replace("https://zkitefly.github.io/unlisted-versions-of-minecraft", "https://vip.123pan.cn/1821946486/unlisted-versions-of-minecraft"),
                 Original.
                     Replace("https://piston-data.mojang.com", "https://bmclapi2.bangbang93.com/libraries").
                     Replace("https://piston-meta.mojang.com", "https://bmclapi2.bangbang93.com/libraries").
-                    Replace("https://libraries.minecraft.net", "https://bmclapi2.bangbang93.com/libraries")
+                    Replace("https://libraries.minecraft.net", "https://bmclapi2.bangbang93.com/libraries").
+                    Replace("https://zkitefly.github.io/unlisted-versions-of-minecraft", "https://vip.123pan.cn/1821946486/unlisted-versions-of-minecraft")
             }
         Else
             Return {
                 Original.
                     Replace("https://piston-data.mojang.com", "https://bmclapi2.bangbang93.com/maven").
                     Replace("https://piston-meta.mojang.com", "https://bmclapi2.bangbang93.com/maven").
-                    Replace("https://libraries.minecraft.net", "https://bmclapi2.bangbang93.com/maven"),
+                    Replace("https://libraries.minecraft.net", "https://bmclapi2.bangbang93.com/maven").
+                    Replace("https://zkitefly.github.io/unlisted-versions-of-minecraft", "https://vip.123pan.cn/1821946486/unlisted-versions-of-minecraft"),
                 Original.
                     Replace("https://piston-data.mojang.com", "https://bmclapi2.bangbang93.com/libraries").
                     Replace("https://piston-meta.mojang.com", "https://bmclapi2.bangbang93.com/libraries").
-                    Replace("https://libraries.minecraft.net", "https://bmclapi2.bangbang93.com/libraries"),
+                    Replace("https://libraries.minecraft.net", "https://bmclapi2.bangbang93.com/libraries").
+                    Replace("https://zkitefly.github.io/unlisted-versions-of-minecraft", "https://vip.123pan.cn/1821946486/unlisted-versions-of-minecraft"),
                 Original
             }
         End If
@@ -1228,7 +1348,8 @@
                 Replace("https://piston-data.mojang.com", "https://bmclapi2.bangbang93.com").
                 Replace("https://piston-meta.mojang.com", "https://bmclapi2.bangbang93.com").
                 Replace("https://launcher.mojang.com", "https://bmclapi2.bangbang93.com").
-                Replace("https://launchermeta.mojang.com", "https://bmclapi2.bangbang93.com"),
+                Replace("https://launchermeta.mojang.com", "https://bmclapi2.bangbang93.com").
+                Replace("https://zkitefly.github.io/unlisted-versions-of-minecraft", "https://vip.123pan.cn/1821946486/unlisted-versions-of-minecraft"),
             Original
         }
     End Function
