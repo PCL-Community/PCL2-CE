@@ -187,3 +187,12 @@
 
 - 修正了构建配置中 BETA 和 RELEASE 反了的问题
 - 修改了 Action 构建配置
+
+## 2.9.0 (24-12-21)
+
+### 新功能
+
+- Quilt 相关支持
+- 资源收藏夹
+- MyHint 支持三种状态
+- 支持 LittleSkin OAuth 登录
