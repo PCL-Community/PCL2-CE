@@ -24,6 +24,11 @@ Public Module ModLaunch
         ''' 额外的启动参数。
         ''' </summary>
         Public ExtraArgs As New List(Of String)
+        ''' <summary>
+        ''' 是否为 “测试游戏” 按钮启动的游戏。
+        ''' 如果是，则显示游戏实时日志。
+        ''' </summary>
+        Public Test As Boolean = False
     End Class
     ''' <summary>
     ''' 尝试启动 Minecraft。必须在 UI 线程调用。
@@ -2164,7 +2169,6 @@ IgnoreCustomSkin:
         End If
         Loader.Output = GameProcess
         McLaunchProcess = GameProcess
-
         '进程优先级处理
         Try
             GameProcess.PriorityBoostEnabled = True
@@ -2181,6 +2185,14 @@ IgnoreCustomSkin:
 
     End Sub
     Private Sub McLaunchWait(Loader As LoaderTask(Of Process, Integer))
+
+        '显示实时日志
+        If CurrentLaunchOptions.Test Then
+            If FrmLogLeft Is Nothing Then RunInUiWait(Sub() FrmLogLeft = New PageLogLeft)
+            If FrmLogRight Is Nothing Then RunInUiWait(Sub() FrmLogRight = New PageLogRight)
+            FrmLogLeft.AddProcess(McVersionCurrent, McLaunchProcess)
+            McLaunchLog("已显示游戏实时日志")
+        End If
 
         '输出信息
         McLaunchLog("")
