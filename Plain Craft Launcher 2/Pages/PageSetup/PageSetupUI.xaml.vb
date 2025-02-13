@@ -667,12 +667,6 @@ Refresh:
     End Sub
 
 #End Region
-
-    '赞助
-    Private Sub BtnLauncherDonate_Click(sender As Object, e As EventArgs) Handles BtnLauncherDonate.Click
-        OpenWebsite("https://afdian.com/a/LTCat")
-    End Sub
-
     '滑动条
     Private Sub SliderLoad()
         SliderMusicVolume.GetHintText = Function(v) Math.Ceiling(v * 0.1) & "%"

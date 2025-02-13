@@ -124,8 +124,8 @@
                             <Path x:Name="ShapeTitleLogo" Data="M26,29 v-25 h5 a7,7 180 0 1 0,14 h-5 M61,6.5 a10,11.5 180 1 0 0,18 M68,2.5 v24.5 h12 M98,2 v27 M107,2 v27" SnapsToDevicePixels="False" UseLayoutRounding="False" IsHitTestVisible="False" HorizontalAlignment="Left" Margin="19,15.5,0,15.5" Stretch="fill" Stroke="White" StrokeThickness="1.9" Width="53" />
                             <TextBlock x:Name="LabTitleLogo" Visibility="Collapsed" SnapsToDevicePixels="False" UseLayoutRounding="False" IsHitTestVisible="False" HorizontalAlignment="Left" Margin="18,0,0,0" Foreground="White" FontSize="17" VerticalAlignment="Center" />
                             <local:MyImage x:Name="ImageTitleLogo" SnapsToDevicePixels="False" UseLayoutRounding="False" IsHitTestVisible="False" HorizontalAlignment="Left" Margin="7" VerticalAlignment="Center" Visibility="Collapsed" />
-                            <Border x:Name="CELogo" Grid.Column="1" SnapsToDevicePixels="False" UseLayoutRounding="False" IsHitTestVisible="False" HorizontalAlignment="Left" Margin="10,0,0,0" Background="White" CornerRadius="5" Height="18" Width="20">
-                                <TextBlock Text="CE" Foreground="{DynamicResource ColorBrush2}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Border x:Name="CELogo" Grid.Column="1" SnapsToDevicePixels="False" UseLayoutRounding="False" IsHitTestVisible="False" HorizontalAlignment="Left" Margin="10,0,0,0" Background="White" CornerRadius="5" Height="18" Width="50">
+                                <TextBlock Text="CQMUA" Foreground="{DynamicResource ColorBrush2}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
                         <StackPanel Grid.Column="1" x:Name="PanTitleSelect" HorizontalAlignment="Left" Height="27" VerticalAlignment="Center" Orientation="Horizontal" Margin="13,0">

@@ -58,9 +58,7 @@
             ComboServerLogin.SelectedIndex = Setup.Get("VersionServerLogin", Version:=PageVersionLeft.Version)
             ComboServerLoginLast = ComboServerLogin.SelectedIndex
             ServerLogin(ComboServerLogin.SelectedIndex)
-            TextServerNide.Text = Setup.Get("VersionServerNide", Version:=PageVersionLeft.Version)
             TextServerAuthServer.Text = Setup.Get("VersionServerAuthServer", Version:=PageVersionLeft.Version)
-            TextServerAuthName.Text = Setup.Get("VersionServerAuthName", Version:=PageVersionLeft.Version)
             TextServerAuthRegister.Text = Setup.Get("VersionServerAuthRegister", Version:=PageVersionLeft.Version)
 
             '高级设置
@@ -129,7 +127,7 @@
     Private Shared Sub RadioBoxChange(sender As MyRadioBox, e As Object) Handles RadioRamType0.Check, RadioRamType1.Check, RadioRamType2.Check
         If AniControlEnabled = 0 Then Setup.Set(sender.Tag.ToString.Split("/")(0), Val(sender.Tag.ToString.Split("/")(1)), Version:=PageVersionLeft.Version)
     End Sub
-    Private Shared Sub TextBoxChange(sender As MyTextBox, e As Object) Handles TextServerEnter.ValidatedTextChanged, TextArgumentInfo.ValidatedTextChanged, TextAdvanceGame.ValidatedTextChanged, TextAdvanceJvm.ValidatedTextChanged, TextServerNide.ValidatedTextChanged, TextServerAuthName.ValidatedTextChanged, TextServerAuthRegister.ValidatedTextChanged, TextServerAuthServer.ValidatedTextChanged, TextArgumentTitle.ValidatedTextChanged, TextAdvanceRun.ValidatedTextChanged
+    Private Shared Sub TextBoxChange(sender As MyTextBox, e As Object) Handles TextServerEnter.ValidatedTextChanged, TextArgumentInfo.ValidatedTextChanged, TextAdvanceGame.ValidatedTextChanged, TextAdvanceJvm.ValidatedTextChanged, TextServerAuthRegister.ValidatedTextChanged, TextServerAuthServer.ValidatedTextChanged, TextArgumentTitle.ValidatedTextChanged, TextAdvanceRun.ValidatedTextChanged
         If AniControlEnabled = 0 Then
             '#3194，不能删减 /
             'Dim HandledText As String = sender.Text
@@ -376,66 +374,44 @@ PreFin:
 
     '全局
     Private ComboServerLoginLast As Integer
-    Private Sub ComboServerLogin_Changed() Handles ComboServerLogin.SelectionChanged, TextServerNide.ValidatedTextChanged, TextServerAuthServer.ValidatedTextChanged, TextServerAuthRegister.ValidatedTextChanged
+    Private Sub ComboServerLogin_Changed() Handles ComboServerLogin.SelectionChanged, TextServerAuthServer.ValidatedTextChanged, TextServerAuthRegister.ValidatedTextChanged
         If AniControlEnabled <> 0 Then Exit Sub
         ServerLogin(ComboServerLogin.SelectedIndex)
         '检查是否输入正确，正确才触发设置改变
-        If ComboServerLogin.SelectedIndex = 3 AndAlso TextServerNide.ValidateResult <> "" Then Exit Sub
-        If ComboServerLogin.SelectedIndex = 4 AndAlso TextServerAuthServer.ValidateResult <> "" Then Exit Sub
+        If (ComboServerLogin.SelectedIndex = 2 Or ComboServerLogin.SelectedIndex = 3) AndAlso TextServerAuthServer.ValidateResult <> "" Then Exit Sub
         '检查结果是否发生改变，未改变则不触发设置改变
         If ComboServerLoginLast = ComboServerLogin.SelectedIndex Then Exit Sub
         '触发
         ComboServerLoginLast = ComboServerLogin.SelectedIndex
         ComboChange(ComboServerLogin, Nothing)
     End Sub
+
     Public Sub ServerLogin(Type As Integer)
-        If LabServerNide Is Nothing Then Exit Sub
-        LabServerNide.Visibility = If(Type = 3, Visibility.Visible, Visibility.Collapsed)
-        TextServerNide.Visibility = If(Type = 3, Visibility.Visible, Visibility.Collapsed)
-        PanServerNide.Visibility = If(Type = 3, Visibility.Visible, Visibility.Collapsed)
-        LabServerAuthName.Visibility = If(Type = 4, Visibility.Visible, Visibility.Collapsed)
-        TextServerAuthName.Visibility = If(Type = 4, Visibility.Visible, Visibility.Collapsed)
-        LabServerAuthRegister.Visibility = If(Type = 4, Visibility.Visible, Visibility.Collapsed)
-        TextServerAuthRegister.Visibility = If(Type = 4, Visibility.Visible, Visibility.Collapsed)
-        LabServerAuthServer.Visibility = If(Type = 4, Visibility.Visible, Visibility.Collapsed)
-        TextServerAuthServer.Visibility = If(Type = 4, Visibility.Visible, Visibility.Collapsed)
-        BtnServerAuthLittle.Visibility = If(Type = 4, Visibility.Visible, Visibility.Collapsed)
+        ' 控制控件可见性
+        LabServerAuthRegister.Visibility = If(Type = 2 Or Type = 3, Visibility.Visible, Visibility.Collapsed)
+        TextServerAuthRegister.Visibility = If(Type = 2 Or Type = 3, Visibility.Visible, Visibility.Collapsed)
+        LabServerAuthServer.Visibility = If(Type = 2 Or Type = 3, Visibility.Visible, Visibility.Collapsed)
+        TextServerAuthServer.Visibility = If(Type = 2 Or Type = 3, Visibility.Visible, Visibility.Collapsed)
         CardServer.TriggerForceResize()
-        '避免微软登录、离线登录和第三方登录：统一通行证出现此提示
-        If Not Type = 4 Then
-            LabServerAuthServerSecurity.Visibility = Visibility.Collapsed
-            LabServerAuthServerSecurityCL.Visibility = Visibility.Collapsed
-            LabServerAuthServerSecurityVerify.Visibility = Visibility.Collapsed
-            ' 如果开头为 http:// 给予警告
-        ElseIf TextServerAuthServer.Text.StartsWithF("https://") AndAlso Setup.Get("ToolDownloadCert") = "False" Then
-            LabServerAuthServerSecurity.Visibility = Visibility.Collapsed
-            LabServerAuthServerSecurityVerify.Visibility = Visibility.Visible
-            LabServerAuthServerSecurityCL.Visibility = Visibility.Visible
-        ElseIf TextServerAuthServer.Text.StartsWithF("http://") Then
-            LabServerAuthServerSecurity.Visibility = Visibility.Visible
-            LabServerAuthServerSecurityCL.Visibility = Visibility.Visible
-            LabServerAuthServerSecurityVerify.Visibility = Visibility.Collapsed
 
-        Else
-            LabServerAuthServerSecurity.Visibility = Visibility.Collapsed
-            LabServerAuthServerSecurityVerify.Visibility = Visibility.Collapsed
-            LabServerAuthServerSecurityCL.Visibility = Visibility.Collapsed
+        ' 根据类型设置预设URL
+        If Type = 2 Or Type = 3 Then
+            Select Case Type
+                Case 2 ' Passport认证
+                    TextServerAuthServer.Text = "https://passport.cqmu.edu.cn/api/yggdrasil"
+                    TextServerAuthRegister.Text = "https://passport.cqmu.edu.cn/auth?tab=register"
+                Case 3 ' 皮肤站认证
+                    TextServerAuthServer.Text = "https://skin.cqmua.cn/api/yggdrasil"
+                    TextServerAuthRegister.Text = "https://skin.cqmua.cn/auth/register"
+            End Select
         End If
-    End Sub
 
-    '统一通行证
-    Private Sub BtnServerNideWeb_Click(sender As Object, e As EventArgs) Handles BtnServerNideWeb.Click
-        OpenWebsite("https://login.mc-user.com:233/server/intro")
-    End Sub
-
-    'LittleSkin
-    Private Sub BtnServerAuthLittle_Click(sender As Object, e As EventArgs) Handles BtnServerAuthLittle.Click
-        If TextServerAuthServer.Text <> "" AndAlso TextServerAuthServer.Text <> "https://littleskin.cn/api/yggdrasil" AndAlso
-            MyMsgBox("即将把第三方登录设置覆盖为 LittleSkin 登录。" & vbCrLf & "除非你是服主，或者服主要求你这样做，否则请不要继续。" & vbCrLf & vbCrLf & "是否确实需要覆盖当前设置？",
-                     "设置覆盖确认", "继续", "取消") = 2 Then Exit Sub
-        TextServerAuthServer.Text = "https://littleskin.cn/api/yggdrasil"
-        TextServerAuthRegister.Text = "https://littleskin.cn/auth/register"
-        TextServerAuthName.Text = "LittleSkin 登录"
+        ' 安全警告显示逻辑
+        If Not (Type = 2 Or Type = 3) Then
+            LabServerAuthServerSecurity.Visibility = Visibility.Collapsed
+            LabServerAuthServerSecurityCL.Visibility = Visibility.Collapsed
+            LabServerAuthServerSecurityVerify.Visibility = Visibility.Collapsed
+        End If
     End Sub
 
 #End Region

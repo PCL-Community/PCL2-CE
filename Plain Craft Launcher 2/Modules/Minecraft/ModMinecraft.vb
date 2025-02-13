@@ -169,13 +169,6 @@ Public Module ModMinecraft
             If value Is Nothing Then Exit Property
             '重置缓存的 Mod 文件夹
             PageDownloadCompDetail.CachedFolder = Nothing
-            '统一通行证重判
-            If AniControlEnabled = 0 AndAlso
-               Setup.Get("VersionServerNide", Version:=value) <> Setup.Get("CacheNideServer") AndAlso
-               Setup.Get("VersionServerLogin", Version:=value) = 3 Then
-                Setup.Set("CacheNideAccess", "")
-                Log("[Launch] 服务器改变，要求重新登录统一通行证")
-            End If
             If Setup.Get("VersionServerLogin", Version:=value) = 3 Then
                 Setup.Set("CacheNideServer", Setup.Get("VersionServerNide", Version:=value))
             End If
@@ -1992,32 +1985,8 @@ OnLoaded:
         'Library 文件
         Result.AddRange(McLibFixFromLibToken(McLibListGet(Version, False), JumpLoaderFolder:=Version.PathIndie & ".jumploader\"))
 
-        '统一通行证文件
-        If Setup.Get("VersionServerLogin", Version:=Version) = 3 Then
-            Dim TargetFile = PathAppdata & "nide8auth.jar"
-            Dim DownloadInfo As JObject = Nothing
-            '获取下载信息
-            Try
-                Log("[Minecraft] 开始获取统一通行证下载信息")
-                '测试链接：https://auth.mc-user.com:233/00000000000000000000000000000000/
-                DownloadInfo = GetJson(NetGetCodeByDownload({
-                        "https://auth.mc-user.com:233/" & Setup.Get("VersionServerNide", Version:=Version)}, IsJson:=True))
-            Catch ex As Exception
-                Log(ex, "获取统一通行证下载信息失败")
-            End Try
-            '校验文件
-            If DownloadInfo IsNot Nothing Then
-                Dim Checker As New FileChecker(Hash:=DownloadInfo("jarHash").ToString)
-                If Checker.Check(TargetFile) IsNot Nothing Then
-                    '开始下载
-                    Log("[Minecraft] 统一通行证需要更新：Hash - " & Checker.Hash, LogLevel.Developer)
-                    Result.Add(New NetFile({"https://login.mc-user.com:233/index/jar"}, TargetFile, Checker))
-                End If
-            End If
-        End If
-
         'Authlib-Injector 文件
-        If Setup.Get("VersionServerLogin", Version:=Version) = 4 Then
+        If Setup.Get("VersionServerLogin", Version:=Version) = 3 or 4 Then
             Dim TargetFile = PathPure & "\authlib-injector.jar"
             Dim DownloadInfo As JObject = Nothing
             '获取下载信息

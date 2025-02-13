@@ -54,18 +54,6 @@ Friend Module ModSecret
                 MsgBoxStyle.Critical, "运行环境错误")
             Environment.[Exit](Result.Cancel)
         End If
-        '开源版本提示
-        If Setup.Get("UiLauncherCEHint") Then
-            MyMsgBox($"你正在使用来自 PCL-Community 的 PCL2 社区版本，遇到问题请不要向官方仓库反馈！
-PCL-Community 及其成员与龙腾猫跃无从属关系，且均不会为您的使用做担保。
-
-该版本中暂时无法使用以下特性：
-- 更新与联网通知：在做了在做了.jpg
-- 主题切换：这是需要赞助解锁的纪念性质的功能，社区版不会制作
-
-该版本中的以下特性与原版有所区别：
-- 百宝箱：主线分支没有提供相关内容", "社区版本说明", "我知道了")
-        End If
     End Sub
 
     ''' <summary>
@@ -73,8 +61,8 @@ PCL-Community 及其成员与龙腾猫跃无从属关系，且均不会为您的
     ''' </summary>
     Friend Function SecretGetUniqueAddress() As String
         ' 彩蛋（你居然会无聊到翻源代码）
-        Dim code As String = "PCL2-CECE-GOOD-2025"
-        Dim rawCode As String = "5202-DOOG-ECEC-2LCP"
+        Dim code As String = "PCL2-CQMU-ALLI-ANCE"
+        Dim rawCode As String = "ECNA-ILLA-UMQC-2LCP"
         Try
             Dim searcher As New ManagementObjectSearcher("select ProcessorId from Win32_Processor") ' 获取 CPU 序列号
             For Each obj As ManagementObject In searcher.Get()

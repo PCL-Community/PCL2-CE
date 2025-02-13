@@ -666,28 +666,16 @@ Public Class FormMain
                             Hint("请先下载游戏，再设置第三方登录！", HintType.Critical)
                             Exit Sub
                         End If
-                        If AuthlibServer = "https://littleskin.cn/api/yggdrasil" Then
-                            'LittleSkin
-                            If MyMsgBox($"是否要在版本 {TargetVersion.Name} 中开启 LittleSkin 登录？" & vbCrLf &
-                                        "你可以在 版本设置 → 设置 → 服务器选项 中修改登录方式。", "第三方登录开启确认", "确定", "取消") = 2 Then
-                                Exit Sub
-                            End If
-                            Setup.Set("VersionServerLogin", 4, Version:=TargetVersion)
-                            Setup.Set("VersionServerAuthServer", "https://littleskin.cn/api/yggdrasil", Version:=TargetVersion)
-                            Setup.Set("VersionServerAuthRegister", "https://littleskin.cn/auth/register", Version:=TargetVersion)
-                            Setup.Set("VersionServerAuthName", "LittleSkin 登录", Version:=TargetVersion)
-                        Else
-                            '第三方 Authlib 服务器
-                            If MyMsgBox($"是否要在版本 {TargetVersion.Name} 中开启第三方登录？" & vbCrLf &
-                                        $"登录服务器：{AuthlibServer}" & vbCrLf & vbCrLf &
-                                        "你可以在 版本设置 → 设置 → 服务器选项 中修改登录方式。", "第三方登录开启确认", "确定", "取消") = 2 Then
-                                Exit Sub
-                            End If
-                            Setup.Set("VersionServerLogin", 4, Version:=TargetVersion)
-                            Setup.Set("VersionServerAuthServer", AuthlibServer, Version:=TargetVersion)
-                            Setup.Set("VersionServerAuthRegister", AuthlibServer.Replace("api/yggdrasil", "auth/register"), Version:=TargetVersion)
-                            Setup.Set("VersionServerAuthName", "", Version:=TargetVersion)
+                        '第三方 Authlib 服务器
+                        If MyMsgBox($"是否要在版本 {TargetVersion.Name} 中开启第三方登录？" & vbCrLf &
+                                    $"登录服务器：{AuthlibServer}" & vbCrLf & vbCrLf &
+                                    "你可以在 版本设置 → 设置 → 服务器选项 中修改登录方式。", "第三方登录开启确认", "确定", "取消") = 2 Then
+                            Exit Sub
                         End If
+                        Setup.Set("VersionServerLogin", 4, Version:=TargetVersion)
+                        Setup.Set("VersionServerAuthServer", AuthlibServer, Version:=TargetVersion)
+                        Setup.Set("VersionServerAuthRegister", AuthlibServer.Replace("api/yggdrasil", "auth/register"), Version:=TargetVersion)
+                        Setup.Set("VersionServerAuthName", "", Version:=TargetVersion)
                         If PageCurrent = PageType.VersionSetup AndAlso PageCurrentSub = PageSubType.VersionSetup Then
                             '正在服务器选项页，需要刷新设置项显示
                             FrmVersionSetup.Reload()

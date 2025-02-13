@@ -314,25 +314,7 @@ UnknownType:
                 LabTypeOne.Text = "正版登录"
                 RadioLoginType5.Visibility = Visibility.Visible
                 RadioLoginType0.Visibility = Visibility.Collapsed
-            Case 2 '仅离线
-                Type = PageType.Legacy
-                Setup.Set("LoginType", McLoginType.Legacy)
-                PanType.Visibility = Visibility.Collapsed
-                PanTypeOne.Visibility = Visibility.Visible
-                PathTypeOne.Data = (New GeometryConverter).ConvertFromString(Logo.IconButtonOffline)
-                LabTypeOne.Text = "离线登录"
-            Case 3 '统一通行证
-                If Setup.Get("CacheNideAccess") = "" Then
-                    Type = PageType.Nide
-                Else
-                    Type = PageType.NideSkin
-                End If
-                Setup.Set("LoginType", McLoginType.Nide)
-                PanType.Visibility = Visibility.Collapsed
-                PanTypeOne.Visibility = Visibility.Visible
-                PathTypeOne.Data = (New GeometryConverter).ConvertFromString(Logo.IconButtonCard)
-                LabTypeOne.Text = "统一通行证登录"
-            Case 4 'Authlib-Injector
+            Case 2 'Passport
                 If Setup.Get("CacheAuthAccess") = "" Then
                     Type = PageType.Auth
                 Else
@@ -343,7 +325,19 @@ UnknownType:
                 PanTypeOne.Visibility = Visibility.Visible
                 PathTypeOne.Data = (New GeometryConverter).ConvertFromString(Logo.IconButtonCard)
                 LabTypeOne.Text = If(McVersionCurrent Is Nothing, Setup.Get("CacheAuthServerName"), Setup.Get("VersionServerAuthName", Version:=McVersionCurrent))
-                If LabTypeOne.Text = "" Then LabTypeOne.Text = "第三方登录"
+                If LabTypeOne.Text = "" Then LabTypeOne.Text = "CQMUA Passport"
+            Case 3 ‘CQMUA联合大厅皮肤站
+                If Setup.Get("CacheAuthAccess") = "" Then
+                    Type = PageType.Auth
+                Else
+                    Type = PageType.AuthSkin
+                End If
+                Setup.Set("LoginType", McLoginType.Auth)
+                PanType.Visibility = Visibility.Collapsed
+                PanTypeOne.Visibility = Visibility.Visible
+                PathTypeOne.Data = (New GeometryConverter).ConvertFromString(Logo.IconButtonCard)
+                LabTypeOne.Text = If(McVersionCurrent Is Nothing, Setup.Get("CacheAuthServerName"), Setup.Get("VersionServerAuthName", Version:=McVersionCurrent))
+                If LabTypeOne.Text = "" Then LabTypeOne.Text = "CQMUA 联合大厅皮肤站"
             Case Else
                 Log("[Control] 未知的登录页面：" & LoginPageType, LogLevel.Hint)
                 GoTo UnknownType
