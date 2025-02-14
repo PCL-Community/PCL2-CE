@@ -124,6 +124,23 @@
         ToolTipService.SetVerticalOffset(BtnOpen, 30)
         ToolTipService.SetHorizontalOffset(BtnOpen, 2)
         AddHandler BtnOpen.Click, AddressOf Open_Click
+        Dim BtnNote As New MyIconButton With {.LogoScale = 1, .Logo = Logo.IconButtonEdit, .Tag = sender}
+        BtnNote.ToolTip = "备注"
+        ToolTipService.SetPlacement(BtnNote, Primitives.PlacementMode.Center)
+        ToolTipService.SetVerticalOffset(BtnNote, 30)
+        ToolTipService.SetHorizontalOffset(BtnNote, 2)
+        AddHandler BtnNote.Click, Sub()
+                                      Dim Proj As CompProject = sender.Entry.Comp
+                                      If Proj Is Nothing Then
+                                          Hint("请等待加载完成……")
+                                          Exit Sub
+                                      End If
+                                      Dim NewNote = MyMsgBoxInput("输入备注", DefaultInput:=Proj.Note)
+                                      If String.IsNullOrWhiteSpace(NewNote) OrElse Proj.Note = NewNote Then Exit Sub
+                                      Proj.Note = NewNote
+                                      CompProject.SaveNotes()
+                                      sender.Refresh()
+                                  End Sub
         Dim BtnCont As New MyIconButton With {.LogoScale = 1, .Logo = Logo.IconButtonInfo, .Tag = sender}
         BtnCont.ToolTip = "详情"
         ToolTipService.SetPlacement(BtnCont, Primitives.PlacementMode.Center)
@@ -144,9 +161,9 @@
         ToolTipService.SetHorizontalOffset(BtnED, 2)
         AddHandler BtnED.Click, AddressOf ED_Click
         If sender.Entry.State = McMod.McModState.Unavailable Then
-            sender.Buttons = {BtnCont, BtnOpen, BtnDelete}
+            sender.Buttons = {BtnCont, BtnOpen, BtnNote, BtnDelete}
         Else
-            sender.Buttons = {BtnCont, BtnOpen, BtnED, BtnDelete}
+            sender.Buttons = {BtnCont, BtnOpen, BtnNote, BtnED, BtnDelete}
         End If
     End Sub
 

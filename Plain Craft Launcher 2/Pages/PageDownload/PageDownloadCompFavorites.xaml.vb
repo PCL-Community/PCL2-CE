@@ -216,7 +216,7 @@
         ToolTipService.SetHorizontalOffset(Btn_Note, 2)
         AddHandler Btn_Note.Click, Sub(sender As Object, e As EventArgs)
                                        Dim NewNote = MyMsgBoxInput("输入备注", DefaultInput:=Proj.Note)
-                                       If String.IsNullOrWhiteSpace(NewNote) Then Exit Sub
+                                       If String.IsNullOrWhiteSpace(NewNote) OrElse Proj.Note = NewNote Then Exit Sub
                                        Proj.Note = NewNote
                                        CompProject.SaveNotes()
                                        CompItem.Title = Proj.TranslatedName & $" ({NewNote})"
