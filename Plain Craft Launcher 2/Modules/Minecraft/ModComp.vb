@@ -177,6 +177,23 @@ Public Module ModComp
         ''' </summary>
         Public ReadOnly GameVersions As List(Of Integer)
 
+        Public Property Note As String
+            Get
+                If CompNotes.ContainsKey(Id) Then
+                    Return CompNotes(Id)
+                End If
+                Return String.Empty
+            End Get
+            Set(value As String)
+                If CompNotes.ContainsKey(Id) Then
+                    CompNotes(Id) = value
+                Else
+                    CompNotes.Add(Id, value)
+                End If
+                SaveNotes()
+            End Set
+        End Property
+
         '数据库信息
 
         Private LoadedDatabase As Boolean = False
@@ -812,6 +829,32 @@ NoSubtitle:
         Public Shared Operator <>(left As CompProject, right As CompProject) As Boolean
             Return Not left = right
         End Operator
+
+        Private Shared _CompNotes As Dictionary(Of String, String)
+        Public Shared Property CompNotes As Dictionary(Of String, String)
+            Get
+                If _CompNotes Is Nothing Then
+                    Try
+                        _CompNotes = JObject.Parse(Setup.Get("CompNotes")).ToObject(GetType(Dictionary(Of String, String)))
+                    Catch ex As Exception
+                        Log(ex, "加载备注失败……", LogLevel.Hint)
+                    End Try
+                End If
+                Return _CompNotes
+            End Get
+            Set(value As Dictionary(Of String, String))
+                _CompNotes = value
+                Try
+                    Setup.Set("CompNotes", JObject.FromObject(_CompNotes).ToString(Newtonsoft.Json.Formatting.None))
+                Catch ex As Exception
+                    Log(ex, "保存备注失败……", LogLevel.Hint)
+                End Try
+            End Set
+        End Property
+
+        Public Shared Sub SaveNotes()
+            CompNotes = _CompNotes
+        End Sub
 
     End Class
 
