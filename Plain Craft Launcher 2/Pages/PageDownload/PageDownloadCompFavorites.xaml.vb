@@ -193,6 +193,7 @@
 
     Private Sub ListItemBuild(CompItem As MyListItem)
         CompItem.Type = MyListItem.CheckType.CheckBox
+        Dim Proj As CompProject = CompItem.Tag
         '----添加按钮----
         '删除按钮
         Dim Btn_Delete As New MyIconButton
@@ -207,15 +208,26 @@
                                          RefreshCardTitle()
                                          RefreshBar()
                                      End Sub
-        CompItem.Buttons = {Btn_Delete}
+        Dim Btn_Note As New MyIconButton
+        Btn_Note.Logo = Logo.IconButtonEdit
+        Btn_Note.ToolTip = "修改备注"
+        ToolTipService.SetPlacement(Btn_Note, Primitives.PlacementMode.Center)
+        ToolTipService.SetVerticalOffset(Btn_Note, 30)
+        ToolTipService.SetHorizontalOffset(Btn_Note, 2)
+        AddHandler Btn_Note.Click, Sub(sender As Object, e As EventArgs)
+                                       Dim NewNote = MyMsgBoxInput("输入备注", DefaultInput:=Proj.Note)
+                                       If String.IsNullOrWhiteSpace(NewNote) Then Exit Sub
+                                       Proj.Note = NewNote
+                                       CompProject.SaveNotes()
+                                       CompItem.Title = Proj.TranslatedName & $" ({NewNote})"
+                                   End Sub
+        CompItem.Buttons = {Btn_Note, Btn_Delete}
         '---操作逻辑---
         '右键查看详细信息界面
-        If TypeOf (CompItem.Tag) Is CompProject Then
-            AddHandler CompItem.MouseRightButtonUp, Sub(sender As Object, e As EventArgs)
-                                                        FrmMain.PageChange(New FormMain.PageStackData With {.Page = FormMain.PageType.CompDetail,
-           .Additional = {CompItem.Tag, New List(Of String), String.Empty, CompModLoaderType.Any}})
-                                                    End Sub
-        End If
+        AddHandler CompItem.MouseRightButtonUp, Sub(sender As Object, e As EventArgs)
+                                                    FrmMain.PageChange(New FormMain.PageStackData With {.Page = FormMain.PageType.CompDetail,
+       .Additional = {CompItem.Tag, New List(Of String), String.Empty, CompModLoaderType.Any}})
+                                                End Sub
         '---其它事件---
         AddHandler CompItem.Changed, AddressOf ItemCheckStatusChanged
     End Sub
