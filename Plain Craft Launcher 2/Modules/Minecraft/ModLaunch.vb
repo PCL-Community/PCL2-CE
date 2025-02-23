@@ -24,6 +24,11 @@ Public Module ModLaunch
         ''' 额外的启动参数。
         ''' </summary>
         Public ExtraArgs As New List(Of String)
+        ''' <summary>
+        ''' 是否为 “测试游戏” 按钮启动的游戏。
+        ''' 如果是，则显示游戏实时日志。
+        ''' </summary>
+        Public Test As Boolean = False
     End Class
     ''' <summary>
     ''' 尝试启动 Minecraft。必须在 UI 线程调用。
@@ -574,7 +579,7 @@ SkipLogin:
     End Sub
     Private Sub McLoginServerStart(Data As LoaderTask(Of McLoginServer, McLoginResult))
         Dim Input As McLoginServer = Data.Input
-        Dim NeedRefresh As Boolean = False
+        Dim NeedRefresh As Boolean = False, WasRefreshed As Boolean = False
         Dim LogUsername As String = Input.UserName
         If LogUsername.Contains("@") AndAlso Setup.Get("UiLauncherEmail") Then
             LogUsername = AccountFilter(LogUsername)
@@ -595,7 +600,7 @@ SkipLogin:
                 McLoginRequestValidate(Data)
                 GoTo LoginFinish
             Catch ex As Exception
-                Dim AllMessage = GetExceptionSummary(ex)
+                Dim AllMessage = GetExceptionDetail(ex)
                 McLaunchLog("验证登录失败：" & AllMessage)
                 If (AllMessage.Contains("超时") OrElse AllMessage.Contains("imeout")) AndAlso Not AllMessage.Contains("403") Then
                     McLaunchLog("已触发超时登录失败")
@@ -610,7 +615,8 @@ Refresh:
                 McLoginRequestRefresh(Data, NeedRefresh)
                 GoTo LoginFinish
             Catch ex As Exception
-                McLaunchLog("刷新登录失败：" & GetExceptionSummary(ex))
+                McLaunchLog("刷新登录失败：" & GetExceptionDetail(ex))
+                If WasRefreshed Then Throw New Exception("二轮刷新登录失败", ex)
             End Try
             Data.Progress = If(NeedRefresh, 0.85, 0.45)
         End If
@@ -619,10 +625,12 @@ Refresh:
             If Data.IsAborted Then Throw New ThreadInterruptedException
             NeedRefresh = McLoginRequestLogin(Data)
         Catch ex As Exception
-            McLaunchLog("登录失败：" & GetExceptionSummary(ex))
+            McLaunchLog("登录失败：" & GetExceptionDetail(ex))
             Throw
         End Try
         If NeedRefresh Then
+            McLaunchLog("重新进行刷新登录")
+            WasRefreshed = True
             Data.Progress = 0.65
             GoTo Refresh
         End If
@@ -768,17 +776,18 @@ LoginFinish:
                 '缓存无效，要求玩家选择
                 If SelectedName Is Nothing Then
                     McLaunchLog("要求玩家选择角色")
-                    RunInUiWait(Sub()
-                                    Dim SelectionControl As New List(Of IMyRadio)
-                                    Dim SelectionJson As New List(Of JToken)
-                                    For Each Profile In LoginJson("availableProfiles")
-                                        SelectionControl.Add(New MyRadioBox With {.Text = Profile("name").ToString})
-                                        SelectionJson.Add(Profile)
-                                    Next
-                                    Dim SelectedIndex As Integer = MyMsgBoxSelect(SelectionControl, "选择使用的角色")
-                                    SelectedName = SelectionJson(SelectedIndex)("name").ToString
-                                    SelectedId = SelectionJson(SelectedIndex)("id").ToString
-                                End Sub)
+                    RunInUiWait(
+                    Sub()
+                        Dim SelectionControl As New List(Of IMyRadio)
+                        Dim SelectionJson As New List(Of JToken)
+                        For Each Profile In LoginJson("availableProfiles")
+                            SelectionControl.Add(New MyRadioBox With {.Text = Profile("name").ToString})
+                            SelectionJson.Add(Profile)
+                        Next
+                        Dim SelectedIndex As Integer = MyMsgBoxSelect(SelectionControl, "选择使用的角色")
+                        SelectedName = SelectionJson(SelectedIndex)("name").ToString
+                        SelectedId = SelectionJson(SelectedIndex)("id").ToString
+                    End Sub)
                     McLaunchLog("玩家选择的角色：" & SelectedName)
                 End If
             Else
@@ -1072,7 +1081,8 @@ Retry:
             Case 3
                 '使用正版用户名
                 Try
-                    If SkinName <> "" AndAlso McVersionCurrent.Version.McCodeMain < 20 Then '1.20+ 或快照版不能使用该项（#3746）
+                    If SkinName <> "" AndAlso
+                        McVersionCurrent IsNot Nothing AndAlso McVersionCurrent.Version.McCodeMain < 20 Then '1.20+ 或快照版不能使用该项（#3746）
                         Log("[Skin] 由于离线皮肤设置，使用正版 UUID：" & SkinName)
                         Uuid = McLoginMojangUuid(SkinName, False)
                     End If
@@ -1186,6 +1196,12 @@ Retry:
                 '1.18：若安装了 OptiFine，最高 Java 18
                 MaxVer = If(New Version(1, 18, 999, 999) < MaxVer, New Version(1, 18, 999, 999), MaxVer)
             End If
+        End If
+
+        'Cleanroom 检测
+        If McVersionCurrent.Version.HasCleanroom Then
+            '需要至少 Java 21
+            MinVer = If(New Version(1, 21, 0, 0) > MinVer, New Version(1, 21, 0, 0), MinVer)
         End If
 
         'Fabric 检测
@@ -1634,16 +1650,16 @@ NextVersion:
 
         '基础参数
         GameArguments.Add("${classpath_separator}", ";")
-        GameArguments.Add("${natives_directory}", GetNativesFolder())
-        GameArguments.Add("${library_directory}", PathMcFolder & "libraries")
-        GameArguments.Add("${libraries_directory}", PathMcFolder & "libraries")
+        GameArguments.Add("${natives_directory}", ShortenPath(GetNativesFolder()))
+        GameArguments.Add("${library_directory}", ShortenPath(PathMcFolder & "libraries"))
+        GameArguments.Add("${libraries_directory}", ShortenPath(PathMcFolder & "libraries"))
         GameArguments.Add("${launcher_name}", "PCL")
         GameArguments.Add("${launcher_version}", VersionCode)
         GameArguments.Add("${version_name}", Version.Name)
         Dim ArgumentInfo As String = Setup.Get("VersionArgumentInfo", Version:=McVersionCurrent)
         GameArguments.Add("${version_type}", If(ArgumentInfo = "", Setup.Get("LaunchArgumentInfo"), ArgumentInfo))
-        GameArguments.Add("${game_directory}", Left(McVersionCurrent.PathIndie, McVersionCurrent.PathIndie.Count - 1))
-        GameArguments.Add("${assets_root}", PathMcFolder & "assets")
+        GameArguments.Add("${game_directory}", ShortenPath(Left(McVersionCurrent.PathIndie, McVersionCurrent.PathIndie.Count - 1)))
+        GameArguments.Add("${assets_root}", ShortenPath(PathMcFolder & "assets"))
         GameArguments.Add("${user_properties}", "{}")
         GameArguments.Add("${auth_player_name}", McLoginLoader.Output.Name)
         GameArguments.Add("${auth_uuid}", McLoginLoader.Output.Uuid)
@@ -1677,7 +1693,7 @@ NextVersion:
         GameArguments.Add("${resolution_height}", Math.Round(GameSize.Height))
 
         'Assets 相关参数
-        GameArguments.Add("${game_assets}", PathMcFolder & "assets\virtual\legacy") '1.5.2 的 pre-1.6 资源索引应与 legacy 合并
+        GameArguments.Add("${game_assets}", ShortenPath(PathMcFolder & "assets\virtual\legacy")) '1.5.2 的 pre-1.6 资源索引应与 legacy 合并
         GameArguments.Add("${assets_index_name}", McAssetsGetIndexName(Version))
 
         '支持库参数
@@ -1687,6 +1703,9 @@ NextVersion:
         Dim OptiFineCp As String = Nothing
         For Each Library As McLibToken In LibList
             If Library.IsNatives Then Continue For
+            If Library.Name IsNot Nothing AndAlso Library.Name.Contains("com.cleanroommc:cleanroom") Then 'Cleanroom 的主 Jar 必须放在 ClassPath 第一位
+                CpStrings.Insert(0, Library.LocalPath + ";")
+            End If
             If Library.Name IsNot Nothing AndAlso Library.Name = "optifine:OptiFine" Then
                 OptiFineCp = Library.LocalPath
             Else
@@ -1694,7 +1713,7 @@ NextVersion:
             End If
         Next
         If OptiFineCp IsNot Nothing Then CpStrings.Insert(CpStrings.Count - 2, OptiFineCp)
-        GameArguments.Add("${classpath}", Join(CpStrings, ";"))
+        GameArguments.Add("${classpath}", Join(CpStrings.Select(Function(c) ShortenPath(c)), ";"))
 
         Return GameArguments
     End Function
@@ -2055,8 +2074,8 @@ IgnoreCustomSkin:
                 "@echo off" & vbCrLf &
                 "title 启动 - " & McVersionCurrent.Name & vbCrLf &
                 "echo 游戏正在启动，请稍候。" & vbCrLf &
-                "set APPDATA=""" & McVersionCurrent.PathIndie & """" & vbCrLf &
-                "cd /D """ & McVersionCurrent.PathIndie & """" & vbCrLf &
+                "set APPDATA=""" & ShortenPath(McVersionCurrent.PathIndie) & """" & vbCrLf &
+                "cd /D """ & ShortenPath(McVersionCurrent.PathIndie) & """" & vbCrLf &
                 CustomCommandGlobal & vbCrLf &
                 CustomCommandVersion & vbCrLf &
                 """" & McLaunchJavaSelected.PathJava & """ " & McLaunchArgument & vbCrLf &
@@ -2067,7 +2086,7 @@ IgnoreCustomSkin:
             If CurrentLaunchOptions.SaveBatch IsNot Nothing Then
                 McLaunchLog("导出启动脚本完成，强制结束启动过程")
                 AbortHint = "导出启动脚本成功！"
-                OpenExplorer("/select,""" & CurrentLaunchOptions.SaveBatch & """")
+                OpenExplorer(CurrentLaunchOptions.SaveBatch)
                 Loader.Parent.Abort()
                 Exit Sub '导出脚本完成
             End If
@@ -2083,7 +2102,7 @@ IgnoreCustomSkin:
             Try
                 CustomProcess.StartInfo.FileName = "cmd.exe"
                 CustomProcess.StartInfo.Arguments = "/c """ & CustomCommandGlobal & """"
-                CustomProcess.StartInfo.WorkingDirectory = PathMcFolder
+                CustomProcess.StartInfo.WorkingDirectory = ShortenPath(PathMcFolder)
                 CustomProcess.StartInfo.UseShellExecute = False
                 CustomProcess.StartInfo.CreateNoWindow = True
                 CustomProcess.Start()
@@ -2107,7 +2126,7 @@ IgnoreCustomSkin:
             Try
                 CustomProcess.StartInfo.FileName = "cmd.exe"
                 CustomProcess.StartInfo.Arguments = "/c """ & CustomCommandVersion & """"
-                CustomProcess.StartInfo.WorkingDirectory = PathMcFolder
+                CustomProcess.StartInfo.WorkingDirectory = ShortenPath(PathMcFolder)
                 CustomProcess.StartInfo.UseShellExecute = False
                 CustomProcess.StartInfo.CreateNoWindow = True
                 CustomProcess.Start()
@@ -2135,18 +2154,18 @@ IgnoreCustomSkin:
 
         '设置环境变量
         If StartInfo.EnvironmentVariables.ContainsKey("appdata") Then
-            StartInfo.EnvironmentVariables("appdata") = PathMcFolder
+            StartInfo.EnvironmentVariables("appdata") = ShortenPath(PathMcFolder)
         Else
-            StartInfo.EnvironmentVariables.Add("appdata", PathMcFolder)
+            StartInfo.EnvironmentVariables.Add("appdata", ShortenPath(PathMcFolder))
         End If
         Dim Paths As New List(Of String)(StartInfo.EnvironmentVariables("Path").Split(";"))
-        Paths.Add(McLaunchJavaSelected.PathFolder)
+        Paths.Add(ShortenPath(McLaunchJavaSelected.PathFolder))
         StartInfo.EnvironmentVariables("Path") = Join(Paths.Distinct.ToList, ";")
 
         '设置其他参数
         StartInfo.StandardErrorEncoding = Encoding.UTF8
         StartInfo.StandardOutputEncoding = Encoding.UTF8
-        StartInfo.WorkingDirectory = McVersionCurrent.PathIndie
+        StartInfo.WorkingDirectory = ShortenPath(McVersionCurrent.PathIndie)
         StartInfo.UseShellExecute = False
         StartInfo.RedirectStandardOutput = True
         StartInfo.RedirectStandardError = True
@@ -2164,7 +2183,6 @@ IgnoreCustomSkin:
         End If
         Loader.Output = GameProcess
         McLaunchProcess = GameProcess
-
         '进程优先级处理
         Try
             GameProcess.PriorityBoostEnabled = True
@@ -2212,8 +2230,16 @@ IgnoreCustomSkin:
         WindowTitle = ArgumentReplace(WindowTitle, False)
 
         '初始化等待
-        Dim Watcher As New Watcher(Loader, McVersionCurrent, WindowTitle)
+        Dim Watcher As New Watcher(Loader, McVersionCurrent, WindowTitle, CurrentLaunchOptions.Test)
         McLaunchWatcher = Watcher
+
+        '显示实时日志
+        If CurrentLaunchOptions.Test Then
+            If FrmLogLeft Is Nothing Then RunInUiWait(Sub() FrmLogLeft = New PageLogLeft)
+            If FrmLogRight Is Nothing Then RunInUiWait(Sub() FrmLogRight = New PageLogRight)
+            FrmLogLeft.Add(Watcher)
+            McLaunchLog("已显示游戏实时日志")
+        End If
 
         '等待
         Do While Watcher.State = Watcher.MinecraftState.Loading

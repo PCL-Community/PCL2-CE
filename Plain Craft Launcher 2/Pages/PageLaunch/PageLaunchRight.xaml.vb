@@ -8,7 +8,7 @@
         '社区版提示
         PanHint.Visibility = If(Setup.Get("UiLauncherCEHint"), Visibility.Visible, Visibility.Collapsed)
         LabHint1.Text = "社区版包含未在官方主线版本发布的功能，仅用于尝鲜。请不要向官方仓库反馈社区版的问题哦！"
-        LabHint2.Text = $"若要永久隐藏此提示，请自行查阅代码中的相关部分。"
+        LabHint2.Text = $"若要永久隐藏此提示，请参阅 README。"
     End Sub
 
     '暂时关闭快照版提示
@@ -228,7 +228,7 @@ Download:
                 PanCustom.Children.Add(GetObjectFromXML(Content))
             Catch ex As Exception
                 Log("[Page] 加载失败的自定义主页内容：" & vbCrLf & Content)
-                If MyMsgBox($"自定义主页内容编写有误，请根据下列错误信息进行检查：{vbCrLf}{ex.Message}", "加载自定义主页失败", "重试", "取消") = 1 Then
+                If MyMsgBox($"自定义主页内容编写有误，请根据下列错误信息进行检查：{vbCrLf}{GetExceptionSummary(ex)}", "加载自定义主页失败", "重试", "取消") = 1 Then
                     GoTo Refresh '防止 SyncLock 死锁
                 End If
             End Try

@@ -33,6 +33,7 @@ jobs:
       fail-fast: false
 
     steps:
+
     - name: Checkout
       uses: actions/checkout@v4
 
@@ -42,6 +43,7 @@ jobs:
           $describe = $(git describe --tags --always)
           echo "describe=$describe" >> $GITHUB_ENV
 
+
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
       with:
@@ -50,7 +52,7 @@ jobs:
     - name: Update Help
       run: |
         cd ..
-        git clone https://gh.llkk.cc/https://github.com/PCL-Community/PCL2CEHelp -b master --single-branch --depth 1
+        git clone https://github.com/PCL-Community/PCL2CEHelp -b master --single-branch --depth 1
         cd PCL2CEHelp
         rm -Force -r *.*
         Compress-Archive -Path .\* -DestinationPath .\Help.zip

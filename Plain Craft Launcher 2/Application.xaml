@@ -13,6 +13,12 @@
                 <ResourceDictionary Source="pack://application:,,,/Resources/Language/zh_CN.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Resources/Language/zh_CN.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Converter -->
+            <local:AdditionConverter x:Key="AdditionConverter"/>
+            <local:MultiplicationConverter x:Key="MultiplicationConverter"/>
+            <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+            <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
 
             <!-- 颜色表 -->
             <SolidColorBrush x:Key="ColorBrush1">#343d4a</SolidColorBrush>
@@ -64,6 +70,11 @@
             <SolidColorBrush x:Key="ColorBrushMsgBox">#fbfbfb</SolidColorBrush>
             <SolidColorBrush x:Key="ColorBrushMsgBoxText">#5c5c5c</SolidColorBrush>
             <SolidColorBrush x:Key="ColorBrushMemory">#000000</SolidColorBrush>
+            <SolidColorBrush x:Key="ColorBrushFatal">#c23616</SolidColorBrush>
+            <SolidColorBrush x:Key="ColorBrushError">#e74c3c</SolidColorBrush>
+            <SolidColorBrush x:Key="ColorBrushWarn">#f39c12</SolidColorBrush>
+            <SolidColorBrush x:Key="ColorBrushInfo">#ffffff</SolidColorBrush>
+            <SolidColorBrush x:Key="ColorBrushDebug">#95a5a6</SolidColorBrush>
 
 
             <!-- Window -->

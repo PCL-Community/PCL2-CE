@@ -140,6 +140,8 @@
                 Throw ex
             Catch ex As ThreadInterruptedException
                 Throw ex
+            Catch ex As System.ComponentModel.Win32Exception
+                Throw New ApplicationException($"与系统交互时出现错误，错误代码：{ex.ErrorCode}", ex)
             Catch ex As Exception
                 Log("[Java] 检查失败的 Java 输出：" & PathFolder & "java.exe" & vbCrLf & If(Output, "无程序输出"))
                 Throw New Exception("检查 Java 失败（" & If(PathJavaw, "Nothing") & "）", ex)
@@ -659,7 +661,7 @@ Wait:
     Private Sub JavaSearchFolder(OriginalPath As String, ByRef Results As Dictionary(Of String, Boolean), Source As Boolean, Optional IsFullSearch As Boolean = False)
         Try
             Log("[Java] 开始" & If(IsFullSearch, "完全", "部分") & "遍历查找：" & OriginalPath)
-            JavaSearchFolder(New DirectoryInfo(OriginalPath), Results, Source, IsFullSearch)
+            JavaSearchFolder(New DirectoryInfo(ShortenPath(OriginalPath)), Results, Source, IsFullSearch)
         Catch ex As UnauthorizedAccessException
             Log("[Java] 遍历查找 Java 时遭遇无权限的文件夹：" & OriginalPath)
         Catch ex As Exception
@@ -747,7 +749,7 @@ Wait:
     Private LastJavaBaseDir As String = Nothing '用于在下载中断或失败时删除未完成下载的 Java 文件夹，防止残留只下了一半但 -version 能跑的 Java
     Private Sub JavaFileList(Loader As LoaderTask(Of Integer, List(Of NetFile)))
         Log("[Java] 开始获取 Java 下载信息")
-        Dim IndexFileStr As String = NetGetCodeByDownload(
+        Dim IndexFileStr As String = NetGetCodeByLoader(
             {"https://bmclapi2.bangbang93.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json",
              "https://piston-meta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json"},
         IsJson:=True)
@@ -759,7 +761,7 @@ Wait:
         Dim Address As String = TargetEntry.Value("manifest")("url")
         Log($"[Java] 准备下载 Java {TargetEntry.Value("version")("name")}（{TargetEntry.Key}）：{Address}")
         '获取文件列表
-        Dim ListFileStr As String = NetGetCodeByDownload({Address.Replace("piston-meta.mojang.com", "bmclapi2.bangbang93.com"), Address}, IsJson:=True)
+        Dim ListFileStr As String = NetGetCodeByLoader({Address.Replace("piston-meta.mojang.com", "bmclapi2.bangbang93.com"), Address}, IsJson:=True)
         LastJavaBaseDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) & "\.minecraft\runtime\" & TargetEntry.Key & "\"
         Dim Results As New List(Of NetFile)
         For Each File As JProperty In CType(GetJson(ListFileStr), JObject)("files")

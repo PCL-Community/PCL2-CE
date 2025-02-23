@@ -24,14 +24,52 @@ Public Module ModComp
         ''' </summary>
         Other = 4
     End Enum
-    Public Enum CompModLoaderType
+    Public Enum CompLoaderType
         'https://docs.curseforge.com/?http#tocS_ModLoaderType
+        ''' <summary>
+        ''' 模组加载器
+        ''' </summary>
         Any = 0
+        ''' <summary>
+        ''' 模组加载器
+        ''' </summary>
         Forge = 1
+        ''' <summary>
+        ''' 模组加载器
+        ''' </summary>
         LiteLoader = 3
+        ''' <summary>
+        ''' 模组加载器
+        ''' </summary>
         Fabric = 4
+        ''' <summary>
+        ''' 模组加载器
+        ''' </summary>
         Quilt = 5
+        ''' <summary>
+        ''' 模组加载器
+        ''' </summary>
         NeoForge = 6
+        ''' <summary>
+        ''' 材质包
+        ''' </summary>
+        Minecraft = 7
+        ''' <summary>
+        ''' 光影包
+        ''' </summary>
+        Canvas = 8
+        ''' <summary>
+        ''' 光影包
+        ''' </summary>
+        Iris = 9
+        ''' <summary>
+        ''' 光影包
+        ''' </summary>
+        OptiFine = 10
+        ''' <summary>
+        ''' 光影包
+        ''' </summary>
+        Vanilla = 11
     End Enum
     <Flags> Public Enum CompSourceType
         CurseForge = 1
@@ -163,7 +201,7 @@ Public Module ModComp
         ''' <summary>
         ''' 支持的 Mod 加载器列表。可能为空。
         ''' </summary>
-        Public ReadOnly ModLoaders As List(Of CompModLoaderType)
+        Public ReadOnly ModLoaders As List(Of CompLoaderType)
         ''' <summary>
         ''' 描述性标签的内容。已转换为中文。
         ''' </summary>
@@ -278,9 +316,9 @@ Public Module ModComp
                 If Data.ContainsKey("LastUpdate") Then LastUpdate = Data("LastUpdate")
                 DownloadCount = Data("DownloadCount")
                 If Data.ContainsKey("ModLoaders") Then
-                    ModLoaders = CType(Data("ModLoaders"), JArray).Select(Function(t) CType(t.ToObject(Of Integer), CompModLoaderType)).ToList
+                    ModLoaders = CType(Data("ModLoaders"), JArray).Select(Function(t) CType(t.ToObject(Of Integer), CompLoaderType)).ToList
                 Else
-                    ModLoaders = New List(Of CompModLoaderType)
+                    ModLoaders = New List(Of CompLoaderType)
                 End If
                 Tags = CType(Data("Tags"), JArray).Select(Function(t) t.ToString).ToList
                 If Data.ContainsKey("LogoUrl") Then LogoUrl = Data("LogoUrl")
@@ -310,7 +348,7 @@ Public Module ModComp
                         End If
                     End If
                     'FileIndexes / GameVersions / ModLoaders
-                    ModLoaders = New List(Of CompModLoaderType)
+                    ModLoaders = New List(Of CompLoaderType)
                     Dim Files As New List(Of KeyValuePair(Of Integer, List(Of String))) 'FileId, GameVersions
                     For Each File In If(Data("latestFiles"), New JArray)
                         Dim NewFile As New CompFile(File, Type)
@@ -441,24 +479,24 @@ Public Module ModComp
                     End Select
                     'Tags & ModLoaders
                     Tags = New List(Of String)
-                    ModLoaders = New List(Of CompModLoaderType)
+                    ModLoaders = New List(Of CompLoaderType)
                     If Data?("loaders") IsNot Nothing Then
                         For Each Category In Data("loaders").Select(Function(t) t.ToString)
                             Select Case Category
-                                Case "forge" : ModLoaders.Add(CompModLoaderType.Forge)
-                                Case "fabric" : ModLoaders.Add(CompModLoaderType.Fabric)
-                                Case "quilt" : ModLoaders.Add(CompModLoaderType.Quilt)
-                                Case "neoforge" : ModLoaders.Add(CompModLoaderType.NeoForge)
+                                Case "forge" : ModLoaders.Add(CompLoaderType.Forge)
+                                Case "fabric" : ModLoaders.Add(CompLoaderType.Fabric)
+                                Case "quilt" : ModLoaders.Add(CompLoaderType.Quilt)
+                                Case "neoforge" : ModLoaders.Add(CompLoaderType.NeoForge)
                             End Select
                         Next
                     End If
                     For Each Category In Data("categories").Select(Function(t) t.ToString)
                         Select Case Category
                             '加载器
-                            Case "forge" : ModLoaders.Add(CompModLoaderType.Forge)
-                            Case "fabric" : ModLoaders.Add(CompModLoaderType.Fabric)
-                            Case "quilt" : ModLoaders.Add(CompModLoaderType.Quilt)
-                            Case "neoforge" : ModLoaders.Add(CompModLoaderType.NeoForge)
+                            Case "forge" : ModLoaders.Add(CompLoaderType.Forge)
+                            Case "fabric" : ModLoaders.Add(CompLoaderType.Fabric)
+                            Case "quilt" : ModLoaders.Add(CompLoaderType.Quilt)
+                            Case "neoforge" : ModLoaders.Add(CompLoaderType.NeoForge)
                             'Mod
                             Case "worldgen" : Tags.Add("世界元素")
                             Case "technology" : Tags.Add("科技")
@@ -484,7 +522,7 @@ Public Module ModComp
                             Case "technology" : Tags.Add("科技")
                             Case "magic" : Tags.Add("魔法")
                             Case "adventure" : Tags.Add("冒险")
-                            Case "kitchen-sink" : Tags.Add("大杂烩")
+                            Case "kitchen-sink" : Tags.Add("水槽包/大杂烩")
                             Case "lightweight" : Tags.Add("轻量")
                             '光影包
                             Case "cartoon" : Tags.Add("卡通")
@@ -626,8 +664,8 @@ Public Module ModComp
             End If
             '获取 Mod 加载器描述
             Dim ModLoaderDescriptionFull As String, ModLoaderDescriptionPart As String
-            Dim ModLoadersForDesc As New List(Of CompModLoaderType)(ModLoaders)
-            If Setup.Get("ToolDownloadIgnoreQuilt") Then ModLoadersForDesc.Remove(CompModLoaderType.Quilt)
+            Dim ModLoadersForDesc As New List(Of CompLoaderType)(ModLoaders)
+            If Setup.Get("ToolDownloadIgnoreQuilt") Then ModLoadersForDesc.Remove(CompLoaderType.Quilt)
             Select Case ModLoadersForDesc.Count
                 Case 0
                     If ModLoaders.Count = 1 Then
@@ -642,10 +680,10 @@ Public Module ModComp
                     ModLoaderDescriptionPart = ModLoadersForDesc.Single.ToString
                 Case Else
                     Dim MaxVersion As Integer = If(GameVersions.Any, GameVersions.Max, 99)
-                    If ModLoaders.Contains(CompModLoaderType.Forge) AndAlso
-                       (MaxVersion < 14 OrElse ModLoaders.Contains(CompModLoaderType.Fabric)) AndAlso
-                       (MaxVersion < 20 OrElse ModLoaders.Contains(CompModLoaderType.NeoForge)) AndAlso
-                       (MaxVersion < 14 OrElse ModLoaders.Contains(CompModLoaderType.Quilt) OrElse Setup.Get("ToolDownloadIgnoreQuilt")) Then
+                    If ModLoaders.Contains(CompLoaderType.Forge) AndAlso
+                       (MaxVersion < 14 OrElse ModLoaders.Contains(CompLoaderType.Fabric)) AndAlso
+                       (MaxVersion < 20 OrElse ModLoaders.Contains(CompLoaderType.NeoForge)) AndAlso
+                       (MaxVersion < 14 OrElse ModLoaders.Contains(CompLoaderType.Quilt) OrElse Setup.Get("ToolDownloadIgnoreQuilt")) Then
                         ModLoaderDescriptionFull = "任意"
                         ModLoaderDescriptionPart = ""
                     Else
@@ -907,7 +945,7 @@ NoSubtitle:
         ''' <summary>
         ''' 筛选 Mod 加载器类别。
         ''' </summary>
-        Public ModLoader As CompModLoaderType = CompModLoaderType.Any
+        Public ModLoader As CompLoaderType = CompLoaderType.Any
         ''' <summary>
         ''' 筛选 MC 版本。
         ''' </summary>
@@ -951,7 +989,7 @@ NoSubtitle:
                     Address += "&classId=6552"
             End Select
             Address += "&categoryId=" & If(Tag = "", "0", Tag.BeforeFirst("/"))
-            If ModLoader <> CompModLoaderType.Any Then Address += "&modLoaderType=" & CType(ModLoader, Integer)
+            If ModLoader <> CompLoaderType.Any Then Address += "&modLoaderType=" & CType(ModLoader, Integer)
             If Not String.IsNullOrEmpty(GameVersion) Then Address += "&gameVersion=" & GameVersion
             If Not String.IsNullOrEmpty(SearchText) Then Address += "&searchFilter=" & Net.WebUtility.UrlEncode(SearchText)
             If Storage.CurseForgeOffset > 0 Then Address += "&index=" & Storage.CurseForgeOffset
@@ -972,7 +1010,7 @@ NoSubtitle:
             Dim Facets As New List(Of String)
             Facets.Add($"[""project_type:{GetStringFromEnum(Type).ToLower}""]")
             If Not String.IsNullOrEmpty(Tag) Then Facets.Add($"[""categories:'{Tag.AfterLast("/")}'""]")
-            If ModLoader <> CompModLoaderType.Any Then Facets.Add($"[""categories:'{GetStringFromEnum(ModLoader).ToLower}'""]")
+            If ModLoader <> CompLoaderType.Any Then Facets.Add($"[""categories:'{GetStringFromEnum(ModLoader).ToLower}'""]")
             If Not String.IsNullOrEmpty(GameVersion) Then Facets.Add($"[""versions:'{GameVersion}'""]")
             Address += "&facets=[" & String.Join(",", Facets) & "]"
             Return Address
@@ -1044,7 +1082,7 @@ NoSubtitle:
 
 #Region "拒绝 1.13- Quilt（这个版本根本没有 Quilt）"
 
-        If Task.Input.ModLoader = CompModLoaderType.Quilt AndAlso VersionSortInteger(If(Task.Input.GameVersion, "1.15"), "1.14") = -1 Then
+        If Task.Input.ModLoader = CompLoaderType.Quilt AndAlso VersionSortInteger(If(Task.Input.GameVersion, "1.15"), "1.14") = -1 Then
             Throw New Exception("Quilt 不支持 Minecraft " & Task.Input.GameVersion)
         End If
 
@@ -1346,7 +1384,7 @@ Retry:
         ''' <summary>
         ''' 支持的 Mod 加载器列表。可能为空。
         ''' </summary>
-        Public ReadOnly ModLoaders As List(Of CompModLoaderType)
+        Public ReadOnly ModLoaders As List(Of CompLoaderType)
         ''' <summary>
         ''' 支持的游戏版本列表。类型包括："1.18.5"，"1.18"，"1.18 预览版"，"21w15a"，"未知版本"。
         ''' </summary>
@@ -1426,7 +1464,7 @@ Retry:
                 Status = CType(Data("Status").ToObject(Of Integer), CompFileStatus)
                 If Data.ContainsKey("FileName") Then FileName = Data("FileName").ToString
                 If Data.ContainsKey("DownloadUrls") Then DownloadUrls = Data("DownloadUrls").ToObject(Of List(Of String))
-                If Data.ContainsKey("ModLoaders") Then ModLoaders = Data("ModLoaders").ToObject(Of List(Of CompModLoaderType))
+                If Data.ContainsKey("ModLoaders") Then ModLoaders = Data("ModLoaders").ToObject(Of List(Of CompLoaderType))
                 If Data.ContainsKey("Hash") Then Hash = Data("Hash").ToString
                 If Data.ContainsKey("GameVersions") Then GameVersions = Data("GameVersions").ToObject(Of List(Of String))
                 If Data.ContainsKey("RawDependencies") Then RawDependencies = Data("RawDependencies").ToObject(Of List(Of String))
@@ -1449,10 +1487,7 @@ Retry:
                     Dim Url = Data("downloadUrl").ToString
                     If Url = "" Then Url = $"https://media.forgecdn.net/files/{CInt(Id.ToString.Substring(0, 4))}/{CInt(Id.ToString.Substring(4))}/{FileName}"
                     Url = Url.Replace(FileName, Net.WebUtility.UrlEncode(FileName)) '对文件名进行编码
-                    DownloadUrls = (New List(Of String) From {Url.Replace("-service.overwolf.wtf", ".forgecdn.net").Replace("://edge", "://media"),
-                                       Url.Replace("-service.overwolf.wtf", ".forgecdn.net"),
-                                       Url.Replace("://edge", "://media"),
-                                       Url}).Distinct.ToList '对脑残 CurseForge 的下载地址进行多种修正
+                    DownloadUrls = HandleCurseForgeDownloadUrls(Url) '对脑残 CurseForge 的下载地址进行多种修正
                     DownloadUrls.AddRange(DownloadUrls.Select(Function(u) DlSourceModGet(u)).ToList) '添加镜像源，这个写法是为了让镜像源排在后面
                     DownloadUrls = DownloadUrls.Distinct.ToList '最终去重
                     'Dependencies
@@ -1474,11 +1509,11 @@ Retry:
                         GameVersions = New List(Of String) From {"未知版本"}
                     End If
                     'ModLoaders
-                    ModLoaders = New List(Of CompModLoaderType)
-                    If RawVersions.Contains("forge") Then ModLoaders.Add(CompModLoaderType.Forge)
-                    If RawVersions.Contains("fabric") Then ModLoaders.Add(CompModLoaderType.Fabric)
-                    If RawVersions.Contains("quilt") Then ModLoaders.Add(CompModLoaderType.Quilt)
-                    If RawVersions.Contains("neoforge") Then ModLoaders.Add(CompModLoaderType.NeoForge)
+                    ModLoaders = New List(Of CompLoaderType)
+                    If RawVersions.Contains("forge") Then ModLoaders.Add(CompLoaderType.Forge)
+                    If RawVersions.Contains("fabric") Then ModLoaders.Add(CompLoaderType.Fabric)
+                    If RawVersions.Contains("quilt") Then ModLoaders.Add(CompLoaderType.Quilt)
+                    If RawVersions.Contains("neoforge") Then ModLoaders.Add(CompLoaderType.NeoForge)
 #End Region
                 Else
 #Region "Modrinth"
@@ -1518,15 +1553,28 @@ Retry:
                     End If
                     'ModLoaders
                     Dim RawLoaders As List(Of String) = Data("loaders").Select(Function(v) v.ToString).ToList
-                    ModLoaders = New List(Of CompModLoaderType)
-                    If RawLoaders.Contains("forge") Then ModLoaders.Add(CompModLoaderType.Forge)
-                    If RawLoaders.Contains("neoforge") Then ModLoaders.Add(CompModLoaderType.NeoForge)
-                    If RawLoaders.Contains("fabric") Then ModLoaders.Add(CompModLoaderType.Fabric)
-                    If RawLoaders.Contains("quilt") Then ModLoaders.Add(CompModLoaderType.Quilt)
+                    ModLoaders = New List(Of CompLoaderType)
+                    If RawLoaders.Contains("forge") Then ModLoaders.Add(CompLoaderType.Forge)
+                    If RawLoaders.Contains("neoforge") Then ModLoaders.Add(CompLoaderType.NeoForge)
+                    If RawLoaders.Contains("fabric") Then ModLoaders.Add(CompLoaderType.Fabric)
+                    If RawLoaders.Contains("quilt") Then ModLoaders.Add(CompLoaderType.Quilt)
 #End Region
                 End If
             End If
         End Sub
+
+        ''' <summary>
+        ''' 重新整理 CurseForge 的下载地址。
+        ''' </summary>
+        Public Shared Function HandleCurseForgeDownloadUrls(Url As String) As List(Of String)
+            Return {
+                Url.Replace("-service.overwolf.wtf", ".forgecdn.net").Replace("://edge", "://media"),
+                Url.Replace("-service.overwolf.wtf", ".forgecdn.net"),
+                Url.Replace("://edge", "://media"),
+                Url
+            }.Distinct.ToList
+        End Function
+
         ''' <summary>
         ''' 将当前实例转为可用于保存缓存的 Json。
         ''' </summary>
@@ -2002,7 +2050,7 @@ Retry:
                     Dim Ids As New List(Of String)({ProjectId})
                     Dim CompProjects = CompRequest.GetCompProjectsByIds(Ids)
                     RunInUi(Sub() FrmMain.PageChange(New FormMain.PageStackData With {.Page = FormMain.PageType.CompDetail,
-                               .Additional = {CompProjects.First(), New List(Of String), String.Empty, CompModLoaderType.Any}}))
+                               .Additional = {CompProjects.First(), New List(Of String), String.Empty, CompLoaderType.Any}}))
                 End If
             End While
         End Sub

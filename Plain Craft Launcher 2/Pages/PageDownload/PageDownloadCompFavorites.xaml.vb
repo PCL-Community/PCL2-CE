@@ -19,7 +19,7 @@
     Private Function LoaderInput() As List(Of String)
         Dim TargetList As List(Of String)
         Try
-            TargetList = CurrentFavTarget.Favs
+            TargetList = CurrentFavTarget.Favs.Distinct().ToList()
         Catch ex As Exception
             Log(ex, "[Favorites] 加载收藏夹列表时出错")
         End Try
@@ -226,7 +226,7 @@
         '右键查看详细信息界面
         AddHandler CompItem.MouseRightButtonUp, Sub(sender As Object, e As EventArgs)
                                                     FrmMain.PageChange(New FormMain.PageStackData With {.Page = FormMain.PageType.CompDetail,
-       .Additional = {CompItem.Tag, New List(Of String), String.Empty, CompModLoaderType.Any}})
+       .Additional = {CompItem.Tag, New List(Of String), String.Empty, CompLoaderType.Any}})
                                                 End Sub
         '---其它事件---
         AddHandler CompItem.Changed, AddressOf ItemCheckStatusChanged
@@ -344,7 +344,7 @@
                 Exit Sub
             End If
             If 1 <> MyMsgBox($"批量下载功能仍旧处于测试状态{vbCrLf}使用此功能下载模组不会自动下载前置项。{vbCrLf}请在下载前仔细思考自己的需求，并仔细检查自己的选择，避免下载错误导致时间和网络流量的浪费。", "确定使用此功能？", Button1:="继续", Button2:="算了", IsWarn:=True) Then Exit Sub
-            Dim SupportedModLoader As New List(Of CompModLoaderType)
+            Dim SupportedModLoader As New List(Of CompLoaderType)
             Dim LoaderFirstSet As Boolean = True
             Dim HasMod As Boolean = False
             For Each Item In SelectedItemList ' 获取共同支持的 ModLoader
@@ -365,7 +365,7 @@
                 Exit Sub
             End If
             ' 要求选择版本
-            Dim DesiredModLoader As CompModLoaderType = CompModLoaderType.Any
+            Dim DesiredModLoader As CompLoaderType = CompLoaderType.Any
             If HasMod AndAlso SupportedModLoader.Count > 0 Then
                 If SupportedModLoader.Count > 0 Then
                     Dim MSelection As New List(Of IMyRadio)
@@ -448,7 +448,7 @@
                                                 Ts.Output = Res
                                             End Sub) With {.ProgressWeight = 2})
             GetInfoAndDownloadLoader.Add(New LoaderDownload("批量下载合适资源", New List(Of NetFile)) With {.ProgressWeight = 8})
-            Dim CheckLoader As New LoaderCombo(Of List(Of String))($"批量下载资源({GetUuid()})", GetInfoAndDownloadLoader) With {.OnStateChanged = AddressOf DownloadStateSave}
+            Dim CheckLoader As New LoaderCombo(Of List(Of String))($"批量下载资源({GetUuid()})", GetInfoAndDownloadLoader) With {.OnStateChanged = AddressOf LoaderStateChangedHintOnly}
             CheckLoader.Start(SelectedItemList.Select(Function(i) CType(i.Tag, CompProject).Id).ToList())
             LoaderTaskbarAdd(CheckLoader)
             FrmMain.BtnExtraDownload.ShowRefresh()
@@ -597,7 +597,7 @@
 
     Private Sub HintGetFail_MouseLeftButtonDown(sender As Object, e As MouseButtonEventArgs) Handles HintGetFail.MouseLeftButtonDown
         Dim Content As String = "由于在线资源被删除或者网络问题等因素导致以下资源未获取成功（以资源的 ID 展示）" & vbCrLf & vbCrLf
-        Dim FailIds = Loader.Input.Except(Loader.Output.Select(Function(i) i.Id))
+        Dim FailIds As List(Of String) = Loader.Input.Except(Loader.Output.Select(Function(i) i.Id).ToList()).ToList()
         For Each Id In FailIds
             Content &= $" - {Id}" & vbCrLf
         Next
@@ -612,6 +612,7 @@
                                     For Each Id In FailIds
                                         CurrentFavTarget.Favs.Remove(Id)
                                     Next
+                                    CompFavorites.Save()
                                     Hint("已移除相关收藏", HintType.Finish)
                                 End Sub)
     End Sub
