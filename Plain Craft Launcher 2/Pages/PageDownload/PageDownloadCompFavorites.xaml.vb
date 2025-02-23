@@ -153,7 +153,7 @@
             HintGetFail.Visibility = If(SomeGetFail, Visibility.Visible, Visibility.Collapsed)
             For Each item In Loader.Output
                 Dim CompItem = item.ToListItem()
-                ListItemBuild(CompItem)
+                BuildListItem(CompItem)
                 CompItemList.Add(CompItem)
             Next
             If CompItemList.Any() Then '有收藏
@@ -191,9 +191,10 @@
         End Try
     End Sub
 
-    Private Sub ListItemBuild(CompItem As MyListItem)
+    Private Sub BuildListItem(CompItem As MyListItem)
         CompItem.Type = MyListItem.CheckType.CheckBox
         Dim Proj As CompProject = CompItem.Tag
+        SetNoteOnListItem(Proj.Note, CompItem)
         '----添加按钮----
         '删除按钮
         Dim Btn_Delete As New MyIconButton
@@ -219,7 +220,7 @@
                                        If Proj.Note = NewNote Then Exit Sub
                                        Proj.Note = NewNote
                                        CompProject.SaveNotes()
-                                       CompProject.SetNoteOnListItem(NewNote, CompItem)
+                                       SetNoteOnListItem(NewNote, CompItem)
                                    End Sub
         CompItem.Buttons = {Btn_Note, Btn_Delete}
         '---操作逻辑---
@@ -230,6 +231,27 @@
                                                 End Sub
         '---其它事件---
         AddHandler CompItem.Changed, AddressOf ItemCheckStatusChanged
+    End Sub
+
+    Private Sub SetNoteOnListItem(Note As String, Item As MyListItem)
+        Dim Target As Run = Nothing
+        For Each Inline In Item.Inlines
+            If Inline.Tag = "Comp-Note" Then
+                Target = Inline
+                Exit For
+            End If
+        Next
+        If String.IsNullOrWhiteSpace(Note) Then
+            If Target IsNot Nothing Then
+                Item.Inlines.Remove(Target)
+            End If
+        Else
+            If Target Is Nothing Then
+                Item.Inlines.Add(New Run With {.Text = $" ({Note})", .Tag = "Comp-Note", .Foreground = New SolidColorBrush(Color.FromRgb(0, 184, 148))})
+            Else
+                Target.Text = $" ({Note})"
+            End If
+        End If
     End Sub
 
 #End Region

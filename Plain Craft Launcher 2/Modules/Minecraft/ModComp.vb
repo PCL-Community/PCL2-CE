@@ -737,33 +737,12 @@ Public Module ModComp
         Public Function ToListItem() As MyListItem
             Dim Result As New MyListItem()
             Result.Inlines.Add(New Run With {.Text = TranslatedName})
-            SetNoteOnListItem(Note, Result)
             Result.Info = Description.Replace(vbCr, "").Replace(vbLf, "")
             Result.Logo = LogoUrl
             Result.Tags = Tags
             Result.Tag = Me
             Return Result
         End Function
-        Public Shared Sub SetNoteOnListItem(Note As String, Item As MyListItem)
-            Dim Target As Run = Nothing
-            For Each Inline In Item.Inlines
-                If Inline.Tag = "Comp-Note" Then
-                    Target = Inline
-                    Exit For
-                End If
-            Next
-            If String.IsNullOrWhiteSpace(Note) Then
-                If Target IsNot Nothing Then
-                    Item.Inlines.Remove(Target)
-                End If
-            Else
-                If Target Is Nothing Then
-                    Item.Inlines.Add(New Run With {.Text = $" ({Note})", .Tag = "Comp-Note", .Foreground = New SolidColorBrush(Color.FromRgb(0, 184, 148))})
-                Else
-                    Target.Text = $" ({Note})"
-                End If
-            End If
-        End Sub
         Public Function GetControlLogo() As String
             If String.IsNullOrEmpty(LogoUrl) Then
                 Return PathImage & "Icons/NoIcon.png"
