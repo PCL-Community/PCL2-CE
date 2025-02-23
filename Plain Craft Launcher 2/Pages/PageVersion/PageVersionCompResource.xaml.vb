@@ -181,7 +181,7 @@
                                           Exit Sub
                                       End If
                                       Dim NewNote = MyMsgBoxInput("输入备注", DefaultInput:=Proj.Note)
-                                      If String.IsNullOrWhiteSpace(NewNote) OrElse Proj.Note = NewNote Then Exit Sub
+                                      If Proj.Note = NewNote Then Exit Sub
                                       Proj.Note = NewNote
                                       CompProject.SaveNotes()
                                       sender.Refresh()
