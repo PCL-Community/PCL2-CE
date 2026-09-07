@@ -70,7 +70,7 @@ public class PkceClient(OAuthClientOptions options):IOAuthClient
         return await _client.GetCodePairAsync(scopes, token, extData);
     }
     /// <summary>
-    /// 
+    /// 发起一次验证，以检查认证是否成功
     /// </summary>
     /// <param name="data"></param>
     /// <param name="token"></param>

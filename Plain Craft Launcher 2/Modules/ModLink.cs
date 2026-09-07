@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using PCL.Core.App;
+using PCL.Core.Minecraft.Profile;
 using PCL.Core.App.Localization;
 using PCL.Core.Link.EasyTier;
 using PCL.Core.Link.Lobby;
@@ -28,8 +29,8 @@ public static class ModLink
             return false;
         }
 
-        if (ModProfile.selectedProfile is not null)
-            if (ModProfile.selectedProfile.Username.Contains("|"))
+        if (ProfileService.Current is not null)
+            if (ProfileService.Current.UserName.Contains('|'))
             {
                 HintService.Hint(Lang.Text("Link.Mod.InvalidPlayerId"));
                 return false;

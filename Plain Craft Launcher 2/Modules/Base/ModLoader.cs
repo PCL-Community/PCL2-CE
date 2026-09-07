@@ -437,12 +437,12 @@ public static class ModLoader
             }
             else if (Error is null)
             {
-                throw new Exception("未知错误！");
+                throw new InvalidOperationException("未知错误！");
             }
             else
             {
-                throw new Exception(Error.Message, Error);
-            } // 保留调用堆栈，同时不影响信息输出与单元测试
+                throw Error;
+            }
         }
 
         /// <summary>
@@ -473,7 +473,7 @@ public static class ModLoader
             }
             else if (Error is null)
             {
-                throw new Exception("未知错误！");
+                throw new InvalidOperationException("未知错误！");
             }
             else
             {
@@ -543,6 +543,8 @@ public static class ModLoader
         public OutputType output = default;
 
         private CancellationTokenSource? cancelToken;
+
+        public CancellationToken AbortedToken => cancelToken?.Token ?? new CancellationToken(true);
 
         // 线程设定
         protected internal ThreadPriority threadPriority;

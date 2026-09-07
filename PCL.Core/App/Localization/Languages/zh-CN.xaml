@@ -1504,8 +1504,11 @@
     <sys:String x:Key="Launch.Account.Auth.Password">密码</sys:String>
     <sys:String x:Key="Launch.Account.Auth.Preset.LittleSkin">预设 - LittleSkin</sys:String>
     <sys:String x:Key="Launch.Account.Auth.Register">注册账号</sys:String>
-    <sys:String x:Key="Launch.Account.Auth.Server">服务器</sys:String>
     <sys:String x:Key="Launch.Account.Auth.ServerLabel">验证服务器: {0}</sys:String>
+    <sys:String x:Key="Launch.Account.Auth.SelectServer">选择验证服务器</sys:String>
+    <sys:String x:Key="Launch.Account.Auth.OAuthLogin">开始 OAuth 登录</sys:String>
+    <sys:String x:Key="Launch.Account.Auth.UsePassword">»  使用密码登录</sys:String>
+    <sys:String x:Key="Launch.Account.Auth.UseOAuth">»  使用 OAuth 登录</sys:String>
 
     <!-- Launch.Account.LoginDialog -->
 
@@ -2711,10 +2714,10 @@
     <sys:String x:Key="Setup.Language.Banner.TitlePrefix">让</sys:String>
     <sys:String x:Key="Setup.Language.Banner.TitleSuffix">走向国际化。</sys:String>
     <sys:String x:Key="Setup.Language.Banner.DescriptionLine1">在社区的共同助力下，PCL CE 正迈向国际化的新篇章。</sys:String>
-    <sys:String x:Key="Setup.Language.Banner.DescriptionLine2">欢迎向我们的 GitHub 仓库提交 Pull Request，与我们一同完善多语言支持，为 PCL CE 更好地服务全球用户的目标添砖加瓦。</sys:String>
+    <sys:String x:Key="Setup.Language.Banner.DescriptionLine2">欢迎前往翻译平台参与本地化贡献，或向 GitHub 仓库提交 Pull Request，与我们一同完善多语言支持，为 PCL CE 更好地服务全球用户的目标添砖加瓦。</sys:String>
     <sys:String x:Key="Setup.Language.Banner.DescriptionLine3">感谢每一位参与翻译、校对与改进的贡献者，让 PCL CE 因你们而更加完善。</sys:String>
+    <sys:String x:Key="Setup.Language.Banner.TranslateWebsite">前往翻译平台</sys:String>
     <sys:String x:Key="Setup.Language.Banner.SubmitPullRequest">提交 Pull Request</sys:String>
-    <sys:String x:Key="Setup.Language.Banner.ViewDeveloperDocs">查看开发文档</sys:String>
     <sys:String x:Key="Setup.Language.Reset.Success">已初始化语言页设置！</sys:String>
     <sys:String x:Key="Setup.Language.Title">语言</sys:String>
     <sys:String x:Key="Setup.Language.UiLanguage">界面语言</sys:String>

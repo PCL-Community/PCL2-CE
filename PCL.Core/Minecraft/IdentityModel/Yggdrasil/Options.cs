@@ -22,6 +22,7 @@ public record YggdrasilLegacyAuthenticateOptions
     /// 访问令牌
     /// </summary>
     public string? AccessToken { get; set; }
+    public string? ClientToken { get; set; }
     public required Func<HttpClient> GetClient { get; set; }
     /// <summary>
     /// 请求头

@@ -66,6 +66,7 @@ public partial class PageSetupLaunch
             // 游戏内存
             ((MyRadioBox)FindName("RadioRamType" + Config.Launch.MemoryAllocationMode)).Checked = true;
             SliderRamCustom.Value = Config.Launch.CustomMemorySize;
+            RamType(Config.Launch.MemoryAllocationMode);
 
             // 高级设置
             ComboAdvanceRenderer.SelectedIndex = Config.Launch.Renderer;

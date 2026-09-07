@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using PCL.Core.App.Localization;
+using PCL.Core.Minecraft.Profile;
 using PCL.Core.UI;
 using PCL.Network;
 
@@ -215,8 +216,13 @@ public partial class MySkin
             var skinHeadId = Address.Between(new[] { Address.Contains("Images/Skins/") ? "Skins/" : @"Skin\" }[0],
                 ".png");
             var cachePath = ModBase.pathTemp + $@"Cache\Skin\Head\{skinHeadId}.png";
-            ModProfile.selectedProfile.SkinHeadId = skinHeadId;
-            ModProfile.SaveProfile();
+            if (ProfileService.Current is { } profile)
+            {
+                var updated = profile.Clone();
+                updated.SkinHeadId = skinHeadId;
+                ProfileService.Update(profile, updated);
+                ProfileService.Select(updated);
+            }
             var completeHead = new Bitmap(56, 56);
             using (var g = Graphics.FromImage(completeHead))
             {
@@ -324,7 +330,7 @@ public partial class MySkin
     ///     在更换正版皮肤后，刷新正版皮肤。
     /// </summary>
     /// <param name="skinAddress">新的正版皮肤完整地址。</param>
-    public static void ReloadCache(string skinAddress)
+    public static void ReloadCache(string skinAddress, string uuid)
     {
         // 更新缓存
         // 刷新控件
@@ -333,9 +339,8 @@ public partial class MySkin
         {
             try
             {
-                ModBase.WriteIni(ModBase.pathTemp + @"Cache\Skin\IndexMs.ini", ModProfile.selectedProfile.Uuid,
-                    skinAddress);
-                ModBase.Log($"[Skin] 已写入皮肤地址缓存 {ModProfile.selectedProfile.Uuid} -> {skinAddress}");
+                ModBase.WriteIni(ModBase.pathTemp + @"Cache\Skin\IndexMs.ini", uuid, skinAddress);
+                ModBase.Log($"[Skin] 已写入皮肤地址缓存 {uuid} -> {skinAddress}");
                 PageLaunchLeft.skinMs.WaitForExit(isForceRestart: true);
                 HintService.Hint(Lang.Text("Launch.Skin.ChangeSuccess"), HintType.Success);
             }
@@ -374,7 +379,7 @@ public partial class MySkin
             {
                 // 获取登录信息
                 if (ModLaunch.mcLoginMsLoader.State != ModBase.LoadState.Finished)
-                    ModLaunch.mcLoginMsLoader.WaitForExit(ModProfile.GetLoginData());
+                    ModLaunch.mcLoginMsLoader.WaitForExit(ProfileUi.GetLoginData());
                 if (ModLaunch.mcLoginMsLoader.State != ModBase.LoadState.Finished)
                 {
                     HintService.Hint(Lang.Text("Launch.Skin.Cape.LoginFailed"), HintType.Error);

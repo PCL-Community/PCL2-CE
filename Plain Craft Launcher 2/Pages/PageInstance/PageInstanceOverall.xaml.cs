@@ -6,6 +6,7 @@ using System.Windows.Input;
 using FluentValidation;
 using Microsoft.VisualBasic.FileIO;
 using PCL.Core.App;
+using PCL.Core.Minecraft.Profile;
 using PCL.Core.App.Configuration;
 using PCL.Core.App.Configuration.Storage;
 using PCL.Core.Minecraft;
@@ -555,7 +556,7 @@ public partial class PageInstanceOverall
             if (ModLaunch.McLaunchStart(new ModLaunch.McLaunchOptions
                     { SaveBatch = savePath, instance = PageInstanceLeft.McInstance }))
             {
-                if (ModProfile.selectedProfile.Type == ModLaunch.McLoginType.Legacy)
+                if (ProfileService.Current?.ProfileType == PCL.Core.Minecraft.Profile.Models.ProfileType.Offline)
                     HintService.Hint(Lang.Text("Instance.Overall.Script.Exporting"));
                 else
                     HintService.Hint(Lang.Text("Instance.Overall.Script.ExportingWarning"));

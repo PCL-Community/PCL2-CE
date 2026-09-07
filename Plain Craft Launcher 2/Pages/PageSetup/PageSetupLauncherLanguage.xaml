@@ -163,22 +163,21 @@
                         Orientation="Horizontal">
 
                         <local:MyIconTextButton
+                            x:Name="BtnTranslateWebsite"
+                            Margin="0,0,7,0"
+                            Text="{DynamicResource Setup.Language.Banner.TranslateWebsite}"
+                            SvgIcon="lucide/globe"
+                            ColorType="Highlight"
+                            local:CustomEventService.EventType="OpenUrl"
+                            local:CustomEventService.EventData="https://translate.pclc.cc/projects/pcl-ce/" />
+
+                        <local:MyIconTextButton
                             x:Name="BtnSubmitPullRequest"
                             Margin="0,0,7,0"
                             Text="{DynamicResource Setup.Language.Banner.SubmitPullRequest}"
-                            SvgIcon="lucide/upload"
-                            ColorType="Highlight"
-                            ToolTip="{DynamicResource Setup.Language.Banner.SubmitPullRequest}"
+                            SvgIcon="lucide/git-pull-request-arrow"
                             local:CustomEventService.EventType="OpenUrl"
                             local:CustomEventService.EventData="https://github.com/PCL-Community/PCL-CE/pulls" />
-
-                        <local:MyIconTextButton
-                            x:Name="BtnViewDeveloperDocs"
-                            Text="{DynamicResource Setup.Language.Banner.ViewDeveloperDocs}"
-                            SvgIcon="lucide/book-marked"
-                            ToolTip="{DynamicResource Setup.Language.Banner.ViewDeveloperDocs}"
-                            local:CustomEventService.EventType="OpenUrl"
-                            local:CustomEventService.EventData="https://docs.pclc.cc/ce/developers/" />
                     </StackPanel>
                 </StackPanel>
             </local:MyCard>
