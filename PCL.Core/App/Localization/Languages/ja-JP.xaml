@@ -14,9 +14,9 @@
     <sys:String x:Key="Application.EnvironmentWarning.IKnow">わかりました</sys:String>
     <sys:String x:Key="Application.EnvironmentWarning.Message">PCL CE は起動時に環境問題を検知しました：
 これらの問題を解決しないと、一部の機能が正常に作動しない可能性があります……</sys:String>
-    <sys:String x:Key="Application.EnvironmentWarning.SocialSoftwareFolder">PCL CE 起動器はQQ、WeChat、TIMなどのソーシャルソフトウェアのダウンロードディレクトリで実行中です。他の場所に移動することを検討してください。そうしないと、ゲームのセーブデータや設定が失われる可能性があります</sys:String>
-    <sys:String x:Key="Application.EnvironmentWarning.System32Bit">現在のシステムは32ビットで、PCL CE 起動器や新しいMinecraftに対応しておらず、64ビットシステムに再インストールすることを強くお勧めします</sys:String>
-    <sys:String x:Key="Application.EnvironmentWarning.TempFolder">PCL CE は一時ディレクトリで実行中です。PCL CE をアーカイブから展開してからご使用ください。そうしないと、ゲームのセーブデータや設定が失われる可能性があります</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.SocialSoftwareFolder">- PCL CE 起動器はQQ、WeChat、TIMなどのソーシャルソフトウェアのダウンロードディレクトリで実行中です。他の場所に移動することを検討してください。そうしないと、ゲームのセーブデータや設定が失われる可能性があります</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.System32Bit">- 現在のシステムは32ビットで、PCL CE 起動器や新しいMinecraftに対応しておらず、64ビットシステムに再インストールすることを強くお勧めします</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.TempFolder">- PCL CE は一時ディレクトリで実行中です。PCL CE をアーカイブから展開してからご使用ください。そうしないと、ゲームのセーブデータや設定が失われる可能性があります</sys:String>
     <sys:String x:Key="Application.EnvironmentWarning.Title">環境警報</sys:String>
-    <sys:String x:Key="Application.EnvironmentWarning.WindowsVersion">Windows 版本は推奨要件を満たしておらず、少なくともWindows 10 1809が推奨されており、Windowsシステムのアップグレードを検討することをお勧めします</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.WindowsVersion">- Windows 版本は推奨要件を満たしておらず、少なくともWindows 10 1809が推奨されており、Windowsシステムのアップグレードを検討することをお勧めします</sys:String>
 </ResourceDictionary>
