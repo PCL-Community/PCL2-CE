@@ -1731,7 +1731,8 @@ public static class ModLaunch
 
         // 本地化 Minecraft 启动信息
         var basicString = version.JsonObject["minecraftArguments"].ToString();
-        if (!basicString.Contains("--height"))
+        if (!basicString.Contains("--height") && 
+            version.releaseTime >= new DateTime(2013, 6, 17)) // 2013-06-17 => 13w25a
             basicString += " --height ${resolution_height} --width ${resolution_width}";
         dataList.Add(basicString);
 
