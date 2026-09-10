@@ -199,4 +199,11 @@ Ce que vous pouvez essayer
     <sys:String x:Key="Crash.Reason.UsingOpenJ9">Le runtime Java OpenJ9 peut être incompatible avec le jeu, les mods ou le chargeur.</sys:String>
     <sys:String x:Key="Crash.Reason.VeryShortOutput">La sortie du jeu est trop courte pour que PCL CE puisse l'analyser. Sortie brute:
 {0}</sys:String>
+    <sys:String x:Key="Crash.Report.Export.Success">Rapport de crash exporté!</sys:String>
+    <sys:String x:Key="Crash.Report.SaveDialog.DefaultFileName">Rapport de crash-{0}.zip</sys:String>
+    <sys:String x:Key="Crash.Report.SaveDialog.Filter">Rapport de crash Minecraft (.zip)|.zip</sys:String>
+    <sys:String x:Key="Crash.Report.SaveDialog.Title">Sélectionner l'emplacement d'enregistrement</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.Cpu">CPU：{0}</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.EnvironmentSection">‐ Informations sur l'environnement -</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.Gpu">GPU {0}:{1} ({2} MiB, {3})</sys:String>
 </ResourceDictionary>
