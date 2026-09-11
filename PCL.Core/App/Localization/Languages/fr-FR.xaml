@@ -206,4 +206,10 @@ Ce que vous pouvez essayer
     <sys:String x:Key="Crash.Report.Environment.Cpu">CPU：{0}</sys:String>
     <sys:String x:Key="Crash.Report.Environment.EnvironmentSection">‐ Informations sur l'environnement -</sys:String>
     <sys:String x:Key="Crash.Report.Environment.Gpu">GPU {0}:{1} ({2} MiB, {3})</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.InstanceSection">‐ Informations sur l'instance -</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.LauncherId">Code d'identification: {0}</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.LauncherVersion">Version de PCL CE: {0}</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.MemoryAllocation">Allocation de mémoire (mémoire allouée / mémoire physique installée): {0} / {1} GiB ({2} MiB)</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.MinecraftFolder">Dossier Minecraft: {0}</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.OperatingSystem">Système d'exploitation: {0} (64 bits: {1}, ARM64: {2})</sys:String>
 </ResourceDictionary>
