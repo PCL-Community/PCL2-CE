@@ -71,6 +71,9 @@ public static partial class KernelInterop
 
     [LibraryImport("kernel32.dll", EntryPoint = "GetConsoleWindow")]
     private static partial nint _GetConsoleWindow();
+    
+    [LibraryImport("kernel32.dll")]
+    internal static partial uint GetACP();
 
     // ReSharper restore InconsistentNaming, UnusedMember.Local
 
