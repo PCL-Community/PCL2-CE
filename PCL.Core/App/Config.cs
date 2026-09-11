@@ -37,6 +37,9 @@ public static partial class Config
         /// 动画帧率上限。
         /// </summary>
         [ConfigItem<int>("UiAniFPS", 59)] public partial int AnimationFpsLimit { get; set; }
+
+        [ConfigItem<string>("Profile", "{\"lastUsed\":-1,\"profiles\":[]}", ConfigSource.SharedEncrypt)] public partial string Profiles { get; set; }
+
     }
 
     /// <summary>

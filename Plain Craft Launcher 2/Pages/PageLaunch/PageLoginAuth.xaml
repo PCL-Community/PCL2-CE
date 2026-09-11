@@ -21,9 +21,6 @@
         <ColumnDefinition Width="50" />
         <ColumnDefinition />
     </Grid.ColumnDefinitions>
-    <TextBlock x:Name="TextServerName" Text="{DynamicResource Launch.Account.Auth.ServerLabel}" Grid.Row="0"
-               Grid.Column="1" Margin="-40,0,0,0"
-               HorizontalAlignment="Center" Visibility="Hidden" />
     <local:MyIconButton ToolTip="{DynamicResource Launch.Account.Auth.ChangeProfile}" Grid.Row="4" Height="14"
                         Opacity="0" x:Name="BtnEdit"
                         ToolTipService.Placement="Center" ToolTipService.VerticalOffset="32"
@@ -37,20 +34,63 @@
                         ToolTipService.HorizontalOffset="1" ToolTipService.InitialShowDelay="50" Grid.Column="2"
                         HorizontalAlignment="Center"
                         SvgIcon="lucide/log-out"
-                        Margin="0,0,8,0" VerticalAlignment="Center" />
-    <local:MyComboBox Grid.Row="2" Grid.Column="1" Height="28" x:Name="TextServer" IsEditable="True"
-                      IsTextSearchEnabled="False" />
-    <TextBlock Text="{DynamicResource Launch.Account.Auth.Server}" Grid.Row="2" VerticalAlignment="Center" />
+                         Margin="0,0,8,0" VerticalAlignment="Center" />
+    <Grid x:Name="PanOAuth" Grid.Row="0" Grid.RowSpan="8" Grid.Column="0" Grid.ColumnSpan="2"
+          HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,10,0,0" Visibility="Collapsed">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="25" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Path Data="M660.338 528.065c63.61-46.825 105.131-121.964 105.131-206.83 0-141.7-115.29-256.987-256.997-256.987-141.706 0-256.998 115.288-256.998 256.987 0 85.901 42.52 161.887 107.456 208.562-152.1 59.92-260.185 207.961-260.185 381.077 0 21.276 17.253 38.53 38.53 38.53 21.278 0 38.53-17.254 38.53-38.53 0-183.426 149.232-332.671 332.667-332.671 1.589 0 3.113-.207 4.694-.244.8.056 1.553.244 2.362.244 183.434 0 332.664 149.245 332.664 332.671 0 21.276 17.255 38.53 38.533 38.53 21.277 0 38.53-17.254 38.53-38.53 0-174.885-110.354-324.13-264.917-382.809z m-331.803-206.83c0-99.22 80.72-179.927 179.935-179.927s179.937 80.708 179.937 179.927c0 99.203-80.721 179.91-179.937 179.91s-179.935-80.708-179.935-179.91z"
+               Fill="{DynamicResource ColorBrush2}" Opacity="0.7" Width="40" Stretch="Uniform"
+              Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="4,0,0,0" />
+        <local:MyButton x:Name="BtnOAuth" Text="{DynamicResource Launch.Account.Auth.OAuthLogin}"
+                        ColorType="Highlight" Height="28" Width="120" Grid.Row="2" Grid.ColumnSpan="2"
+                        HorizontalAlignment="Center" />
+        <Grid Grid.Row="4" Grid.ColumnSpan="2" Opacity="0.3" Margin="2,30,2,0" HorizontalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="30" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <local:MyTextButton x:Name="BtnWebsite" Text="{DynamicResource Launch.Account.Microsoft.Website}"
+                                Grid.Column="0" />
+            <local:MyTextButton x:Name="BtnUsePassword" Text="{DynamicResource Launch.Account.Auth.UsePassword}"
+                                Grid.Column="2" />
+        </Grid>
+    </Grid>
     <local:MyTextBox Grid.Row="4" Grid.Column="1" Height="28" x:Name="TextName" />
-    <TextBlock Text="{DynamicResource Launch.Account.Auth.Email}" Grid.Row="4" VerticalAlignment="Center" />
+    <TextBlock x:Name="TextNameTitle" Text="{DynamicResource Launch.Account.Auth.Email}" Grid.Row="4" VerticalAlignment="Center" />
     <PasswordBox Grid.Row="6" Grid.Column="1" x:Name="TextPass" />
-    <TextBlock Text="{DynamicResource Launch.Account.Auth.Password}" Grid.Row="6" VerticalAlignment="Center" />
+    <TextBlock x:Name="TextPassTitle" Text="{DynamicResource Launch.Account.Auth.Password}" Grid.Row="6" VerticalAlignment="Center" />
     <local:MyTextButton Margin="0,12,2,0" x:Name="BtnLink" Content="{DynamicResource Launch.Account.Auth.Register}"
                         Grid.Row="7" HorizontalAlignment="Right"
                         Grid.Column="1" Padding="20,0,0,0" HorizontalContentAlignment="Right" FontSize="13"
                         VerticalContentAlignment="Center" Visibility="Collapsed" />
+    <Grid x:Name="PanPasswordLinks" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
+          Opacity="0.3" Margin="2,20,2,0" HorizontalAlignment="Center" Visibility="Collapsed">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="30" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <local:MyTextButton x:Name="BtnPasswordWebsite" Text="{DynamicResource Launch.Account.Microsoft.Website}"
+                            Grid.Column="0" />
+        <local:MyTextButton x:Name="BtnUseOAuth" Text="{DynamicResource Launch.Account.Auth.UseOAuth}"
+                            Grid.Column="2" />
+    </Grid>
     <local:MyButton x:Name="BtnBack" Grid.Row="9" Grid.Column="1" Width="50" Margin="-100,0,0,0" ColorType="Normal"
                     Text="{DynamicResource Launch.Account.Auth.Back}" HorizontalAlignment="Center" />
+    <local:MyTextButton x:Name="BtnBackOAuth" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
+                        Margin="0" Text="{DynamicResource Launch.Account.Back}"
+                        HorizontalAlignment="Center" Opacity="0.3" Visibility="Collapsed" />
     <local:MyButton x:Name="BtnLogin" Grid.Row="9" Grid.Column="1" Width="50" Margin="20,0,0,0" ColorType="Highlight"
                     Text="{DynamicResource Launch.Account.Auth.Login}" HorizontalAlignment="Center" />
 </Grid>

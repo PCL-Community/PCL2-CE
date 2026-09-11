@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
@@ -17,8 +16,12 @@ using PCL.Core.Utils.OS;
 using PCL.Core.Utils.Secret;
 using PCL.Network;
 using PCL.Core.IO.Net.Http;
-using PCL.Core.Minecraft.IdentityModel.Yggdrasil;
+using PCL.Core.Minecraft.IdentityModel;
+using PCL.Core.Minecraft.Profile;
+using PCL.Core.Minecraft.Profile.Authentication;
+using PCL.Core.Minecraft.Profile.Models;
 using System.Globalization;
+using PCL.Core.Logging;
 
 namespace PCL;
 
@@ -57,30 +60,31 @@ public static class ModLaunch
             throw new Exception(Lang.Text("Minecraft.Launch.Precheck.InstanceError", ModInstanceList.McMcInstanceSelected.Desc));
         // 检查输入信息
         var checkResult = "";
-        ModBase.RunInUiWait(() => checkResult = ModProfile.IsProfileValid());
-        if (ModProfile.selectedProfile is null) // 没选档案
+        ModBase.RunInUiWait(() => checkResult = ProfileUi.IsProfileValid());
+        var selectedProfile = ProfileService.Current;
+        if (selectedProfile is null) // 没选档案
         {
             checkResult = Lang.Text("Minecraft.Launch.Precheck.NoProfile");
         }
         else if (ModInstanceList.McMcInstanceSelected.Info.HasLabyMod ||
                  Config.InstanceAuth.LoginRequirementSolution[ModInstanceList.McMcInstanceSelected?.PathInstance] == 1) // 要求正版验证
         {
-            if (ModProfile.selectedProfile.Type != McLoginType.Ms) checkResult = Lang.Text("Minecraft.Launch.Precheck.RequireMicrosoft");
+            if (selectedProfile.ProfileType != ProfileType.Microsoft) checkResult = Lang.Text("Minecraft.Launch.Precheck.RequireMicrosoft");
         }
         else if (Config.InstanceAuth.LoginRequirementSolution[ModInstanceList.McMcInstanceSelected?.PathInstance] == 2) // 要求第三方验证
         {
-            if (ModProfile.selectedProfile.Type != McLoginType.Auth)
+            if (selectedProfile.ProfileType is not (ProfileType.Authlib or ProfileType.YggdrasilConnect))
                 checkResult = Lang.Text("Minecraft.Launch.Precheck.RequireThirdParty");
-            else if (ModProfile.selectedProfile.Server.BeforeLast("/authserver") !=
+            else if (selectedProfile.Server?.BeforeLast("/authserver") !=
                      Config.InstanceAuth.AuthServerAddress[ModInstanceList.McMcInstanceSelected?.PathInstance])
                 checkResult = Lang.Text("Minecraft.Launch.Precheck.AuthServerMismatch");
         }
         else if (Config.InstanceAuth.LoginRequirementSolution[ModInstanceList.McMcInstanceSelected?.PathInstance] == 3) // 要求正版验证或第三方验证
         {
-            if (ModProfile.selectedProfile.Type == McLoginType.Legacy)
+            if (selectedProfile.ProfileType == ProfileType.Offline)
                 checkResult = Lang.Text("Minecraft.Launch.Precheck.RequireMicrosoftOrThirdParty");
-            else if (ModProfile.selectedProfile.Type == McLoginType.Auth &&
-                     ModProfile.selectedProfile.Server.BeforeLast("/authserver") !=
+            else if ((selectedProfile.ProfileType is ProfileType.Authlib or ProfileType.YggdrasilConnect) &&
+                     selectedProfile.Server?.BeforeLast("/authserver") !=
                      Config.InstanceAuth.AuthServerAddress[ModInstanceList.McMcInstanceSelected?.PathInstance])
                 checkResult = Lang.Text("Minecraft.Launch.Precheck.AuthServerMismatch");
         }
@@ -138,7 +142,7 @@ public static class ModLaunch
         #endif
 
         // 正版购买提示
-        if (!ModProfile.profileList.Any(x => x.Type == McLoginType.Ms))
+        if (!ProfileService.HasMicrosoftProfile)
         {
             if (Lang.IsFeaturesUnrestricted)
             {
@@ -507,6 +511,8 @@ public static class ModLaunch
         ///     登录用户名。
         /// </summary>
         public string UserName;
+        public string DiscoveryAddress;
+        public ProfileType ProviderType = ProfileType.Authlib;
 
         public McLoginServer(McLoginType type)
         {
@@ -526,17 +532,6 @@ public static class ModLaunch
 
     public class McLoginMs : McLoginData
     {
-        public string AccessToken = "";
-
-        /// <summary>
-        ///     缓存的 OAuth RefreshToken。若没有则为空字符串。
-        /// </summary>
-        public string OAuthRefreshToken = "";
-
-        public string ProfileJson = "";
-        public string UserName = "";
-        public string Uuid = "";
-
         public McLoginMs()
         {
             LoginType = McLoginType.Ms;
@@ -544,8 +539,7 @@ public static class ModLaunch
 
         public override int GetHashCode()
         {
-            return (int)Math.Round(ModBase.GetHash(OAuthRefreshToken + AccessToken + Uuid + UserName + ProfileJson) %
-                                   (decimal)int.MaxValue);
+            return (int)Math.Round(ModBase.GetHash(LoginType.ToString()) % (decimal)int.MaxValue);
         }
     }
 
@@ -614,7 +608,7 @@ public static class ModLaunch
         McLoginData loginData = null;
         try
         {
-            loginData = ModProfile.GetLoginData();
+            loginData = ProfileUi.GetLoginData();
         }
         catch (Exception ex)
         {
@@ -632,7 +626,7 @@ public static class ModLaunch
     {
         ModBase.Log("[Profile] 开始加载选定档案");
         // 校验登录信息
-        var checkResult = ModProfile.IsProfileValid();
+        var checkResult = ProfileUi.IsProfileValid();
         if (!string.IsNullOrEmpty(checkResult))
             throw new ArgumentException(checkResult);
         // 获取对应加载器
@@ -673,197 +667,47 @@ public static class ModLaunch
         new("Loader Login Legacy", McLoginLegacyStart);
 
     public static ModLoader.LoaderTask<McLoginServer, McLoginResult> mcLoginAuthLoader =
-        new("Loader Login Auth", McLoginServerStart) { reloadTimeout = 1000 * 60 * 10 };
-
-    // 主加载函数，返回所有需要的登录信息
-    private static long mcLoginMsRefreshTime; // 上次刷新登录的时间
+        new("Loader Login Auth", McLoginServerStartNew) { reloadTimeout = 1000 * 60 * 10 };
 
     #region 正版验证
 
     private static void McLoginMsStart(ModLoader.LoaderTask<McLoginMs, McLoginResult> data)
     {
-        var input = data.input;
-        var logUsername = input.UserName;
-        var isNewProfile = true;
-
-        ModProfile.ProfileLog($"验证方式：正版（{(string.IsNullOrEmpty(logUsername) ? "尚未登录" : logUsername)}）");
+        var existing = ProfileService.Current?.ProfileType == ProfileType.Microsoft ? ProfileService.Current : null;
+        LogWrapper.Info("Profile",$"验证方式：正版（{(existing is null ? "尚未登录" : existing.UserName)}）");
         data.Progress = 0.05d;
-
-        // 已登录且不需要强制重启且登录未过期
-        if (!data.isForceRestarting && !string.IsNullOrEmpty(input.AccessToken) &&
-            mcLoginMsRefreshTime > 0L &&
-            TimeUtils.GetTimeTick() - mcLoginMsRefreshTime < 1000 * 60 * 10)
+        McProfile stored;
+        try
         {
-            data.output = new McLoginResult
+            stored = ProfileService.AuthenticateAsync(ProfileType.Microsoft, new AuthenticationRequest
             {
-                AccessToken = input.AccessToken,
-                Name = input.UserName,
-                Uuid = input.Uuid,
-                Type = "Microsoft",
-                ClientToken = input.Uuid,
-                ProfileJson = input.ProfileJson
-            };
-
-            mcLoginMsRefreshTime = TimeUtils.GetTimeTick();
-            ModProfile.ProfileLog("正版验证完成");
-            return;
+                ForceRefresh = data.isForceRestarting,
+                DeviceCodeHandler = ProfileUi.ShowDeviceCodeLoginAsync,
+                RefreshFailureHandler = _ConfirmMicrosoftRefreshFailureAsync
+            }, existing, select: true, data.AbortedToken).GetAwaiter().GetResult();
         }
-
-        data.Progress = 0.1d;
-
-        // 尝试获取 OAuthToken
-        var oauthTokens = GetOAuthTokens(data, input, out var skipAuth);
-        if (skipAuth)
+        catch (IdentityModelAuthenticationException ex) when (
+            ProfileUi.HandleMicrosoftXstsError(ex) ||
+            ProfileUi.HandleMicrosoftNotOwnedError(ex) ||
+            ProfileUi.HandleMicrosoftCreateProfileError(ex))
         {
-            data.Progress = 0.99d;
-            var profile = ModProfile.selectedProfile;
-            data.output = new McLoginResult
-            {
-                AccessToken = profile.AccessToken,
-                Name = profile.Username,
-                Uuid = profile.Uuid,
-                Type = "Microsoft"
-            };
-            return;
+            throw new IdentityModelException("$$", ex);
         }
-
-        var oauthAccessToken = oauthTokens[0];
-        var oauthRefreshToken = oauthTokens[1];
         ThrowIfAborted(data);
-
-        data.Progress = 0.25d;
-
-        // Step 2: XBL Token
-        var xblToken = MsLoginStep2(oauthAccessToken);
-        if (string.IsNullOrEmpty(xblToken) || xblToken == "Ignore")
-            goto SkipLogin;
-
-        data.Progress = 0.4d;
-        ThrowIfAborted(data);
-
-        // Step 3: XSTS / Minecraft login
-        var tokens = MsLoginStep3(xblToken);
-        if (tokens.Length < 2 || tokens[1] == "Ignore")
-            goto SkipLogin;
-
-        data.Progress = 0.55d;
-        ThrowIfAborted(data);
-
-        // Step 4: Final access token
-        var accessToken = MsLoginStep4(tokens);
-        if (string.IsNullOrEmpty(accessToken) || accessToken == "Ignore")
-            goto SkipLogin;
-
-        data.Progress = 0.7d;
-        ThrowIfAborted(data);
-
-        // Step 5: Additional setup
-        MsLoginStep5(accessToken);
-        data.Progress = 0.85d;
-        ThrowIfAborted(data);
-
-        // Step 6: Profile info
-        var result = MsLoginStep6(accessToken);
-        if (result.Length < 3 || result[2] == "Ignore")
-            goto SkipLogin;
-
-        data.Progress = 0.98d;
-
-        // 检查是否已有相同档案
-        foreach (var profile in ModProfile.profileList)
-            if (profile.Type == McLoginType.Ms &&
-                string.Equals(profile.Username, result[1], StringComparison.Ordinal) &&
-                string.Equals(profile.Uuid, result[0], StringComparison.Ordinal))
-            {
-                isNewProfile = false;
-                if (ModProfile.isCreatingProfile)
-                {
-                    var index = ModProfile.profileList.IndexOf(profile);
-                    ModProfile.profileList[index].Username = result[1];
-                    ModProfile.profileList[index].AccessToken = accessToken;
-                    ModProfile.profileList[index].RefreshToken = oauthRefreshToken;
-                    HintService.Hint(Lang.Text("Minecraft.Launch.Login.Microsoft.ProfileAlreadyAdded"));
-                    goto SkipLogin;
-                }
-            }
-
-        // 输出登录结果
-        if (isNewProfile)
-        {
-            var newProfile = new ModProfile.McProfile
-            {
-                Type = McLoginType.Ms,
-                Uuid = result[0],
-                Username = result[1],
-                AccessToken = accessToken,
-                RefreshToken = oauthRefreshToken,
-                Expires = 1743779140286L,
-                Desc = "",
-                RawJson = result[2]
-            };
-            ModProfile.profileList.Add(newProfile);
-            ModProfile.selectedProfile = newProfile;
-            ModProfile.isCreatingProfile = false;
-        }
-        else
-        {
-            var index = ModProfile.profileList.IndexOf(ModProfile.selectedProfile);
-            ModProfile.profileList[index].Username = result[1];
-            ModProfile.profileList[index].AccessToken = accessToken;
-            ModProfile.profileList[index].RefreshToken = oauthRefreshToken;
-        }
-
-        ModProfile.SaveProfile();
+        ProfileService.IsCreatingProfile = false;
 
         data.output = new McLoginResult
         {
-            AccessToken = accessToken,
-            Name = result[1],
-            Uuid = result[0],
+            AccessToken = stored.AccessToken,
+            Name = stored.UserName,
+            Uuid = stored.Uuid,
             Type = "Microsoft",
-            ClientToken = result[0],
-            ProfileJson = result[2]
+            ClientToken = stored.ClientToken,
+            ProfileJson = stored.RawJson
         };
 
-        SkipLogin:
-        mcLoginMsRefreshTime = TimeUtils.GetTimeTick();
-        ModProfile.ProfileLog("正版验证完成");
-    }
-
-    /// <summary>
-    ///     获取 OAuth Tokens，处理刷新和重新登录逻辑
-    /// </summary>
-    private static string[] GetOAuthTokens(ModLoader.LoaderTask<McLoginMs, McLoginResult> data, McLoginMs input,
-        out bool skipAuth)
-    {
-        skipAuth = false;
-        string[] tokens;
-
-        while (true)
-        {
-            if (string.IsNullOrEmpty(input.OAuthRefreshToken))
-            {
-                tokens = MsLoginStep1New(data);
-            }
-            else
-            {
-                tokens = MsLoginStep1Refresh(input.OAuthRefreshToken);
-                if (tokens.Length > 0 && tokens[0] == "Relogin")
-                {
-                    // 刷新令牌已失效，清除后回退到设备代码流重新登录，避免无限循环
-                    input.OAuthRefreshToken = "";
-                    continue;
-                }
-            }
-
-            if (tokens.Length > 0 && tokens[0] == "Ignore")
-            {
-                skipAuth = true;
-                return tokens;
-            }
-
-            return tokens;
-        }
+        data.Progress = 0.98d;
+        LogWrapper.Info("Profile","正版验证完成");
     }
 
     /// <summary>
@@ -875,917 +719,73 @@ public static class ModLaunch
             throw new ThreadInterruptedException();
     }
 
-    /// <summary>
-    ///     正版验证步骤 1：通过设备代码流获取账号信息
-    /// </summary>
-    /// <returns>OAuth 验证完成的返回结果</returns>
-    private static string[] MsLoginStep1New(ModLoader.LoaderTask<McLoginMs, McLoginResult> data)
+    private static Task<bool> _ConfirmMicrosoftRefreshFailureAsync(Exception exception, CancellationToken token)
     {
-        // 参考：https://learn.microsoft.com/zh-cn/entra/identity-platform/v2-oauth2-device-code
-
-        // 初始请求
-        Retry: ;
-
-        McLaunchLog("开始正版验证 Step 1/6（原始登录）");
-        JsonObject prepareJson;
-        var parameters = new Dictionary<string, string>
+        token.ThrowIfCancellationRequested();
+        LogWrapper.Info("Profile","获取正版 OAuth Token 失败：" + exception);
+        var reuseCachedProfile = false;
+        ModBase.RunInUiWait(() =>
         {
-            { "client_id", Secrets.MSOAuthClientId },
-            { "tenant", "/consumers" },
-            { "scope", "XboxLive.signin offline_access" }
-        };
-
-        using (var response = HttpRequest
-                   .CreatePost("https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode")
-                   .WithFormContent(parameters)
-                   .SendAsync()
-                   .GetAwaiter()
-                   .GetResult())
-        {
-            response.EnsureSuccessStatusCode();
-            prepareJson = (JsonObject)ModBase.GetJson(response.AsString());
-        }
-
-        McLaunchLog("网页登录地址：" + prepareJson["verification_uri"]);
-
-        // 弹窗
-        var converter = new ModMain.MyMsgBoxConverter
-            { Content = prepareJson, ForceWait = true, Type = ModMain.MyMsgBoxType.Login };
-        ModMain.WaitingMyMsgBox.Add(converter);
-        while (converter.Result is null)
-            Thread.Sleep(100);
-        if (converter.Result is ModBase.RestartException)
-        {
-            if (ModMain.MyMsgBox(
-                    Lang.Text("Minecraft.Launch.Login.PasswordRequired.Message", ModBase.vbLQ, ModBase.vbRQ),
-                    Lang.Text("Minecraft.Launch.Login.PasswordRequired.Title"), Lang.Text("Minecraft.Launch.Login.PasswordRequired.Relogin"), Lang.Text("Minecraft.Launch.Login.PasswordRequired.SetPassword"), Lang.Text("Common.Action.Cancel"),
-                    button2Action: () => ModBase.OpenWebsite("https://account.live.com/password/Change")) ==
-                1) goto Retry;
-
-            throw new Exception("$$");
-        }
-
-        if (converter.Result is Exception) throw (Exception)converter.Result;
-
-        return (string[])converter.Result;
+            if (!isLaunching) return;
+            reuseCachedProfile = ModMain.MyMsgBox(
+                Lang.Text("Minecraft.Launch.Login.RefreshAccountFailed.Message"),
+                Lang.Text("Minecraft.Launch.Login.RefreshAccountFailed.Title"), Lang.Text("Minecraft.Launch.Login.Continue"),
+                Lang.Text("Common.Action.Cancel")) == 1;
+        });
+        return Task.FromResult(reuseCachedProfile);
     }
 
-    /// <summary>
-    ///     正版验证步骤 1，刷新登录：从 OAuth Code 或 OAuth RefreshToken 获取 {OAuth accessToken, OAuth RefreshToken}
-    /// </summary>
-    /// <param name="code"></param>
-    /// <returns></returns>
-    private static string[] MsLoginStep1Refresh(string code)
-    {
-        McLaunchLog("开始正版验证 Step 1/6（刷新登录）");
-        if (string.IsNullOrEmpty(code))
-            throw new ArgumentException("传入的 Code 为空", nameof(code));
-        string result = null;
-        try
-        {
-            var parameters = new Dictionary<string, string>
-            {
-                { "client_id", Secrets.MSOAuthClientId },
-                { "refresh_token", code },
-                { "grant_type", "refresh_token" },
-                { "scope", "XboxLive.signin offline_access" }
-            };
-
-            using (var response = HttpRequest
-                       .CreatePost("https://login.live.com/oauth20_token.srf")
-                       .WithFormContent(parameters)
-                       .SendAsync()
-                       .GetAwaiter()
-                       .GetResult())
-            {
-                result = response.AsString();
-                if (!response.IsSuccess)
-                    throw new HttpRequestException(
-                        $"刷新登录请求失败，状态码 {(int)response.StatusCode}：{result}");
-            }
-        }
-        catch (ThreadInterruptedException ex)
-        {
-            ModBase.Log(ex, "加载线程已终止");
-        }
-        catch (Exception ex)
-        {
-            if (ex.Message.ContainsF("invalid_grant", true) || ex.Message.ContainsF("must sign in again", true) ||
-                ex.Message.ContainsF("must first sign in", true) || ex.Message.ContainsF("password expired", true) ||
-                (ex.Message.Contains("refresh_token") && ex.Message.Contains("is not valid"))) // #269
-                return new[] { "Relogin", "" };
-
-            ModProfile.ProfileLog("正版验证 Step 1/6 获取 OAuth Token 失败：" + ex);
-            var isIgnore = false;
-            ModBase.RunInUiWait(() =>
-            {
-                if (!isLaunching)
-                    return;
-                if (ModMain.MyMsgBox(
-                        Lang.Text("Minecraft.Launch.Login.RefreshAccountFailed.Message"),
-                        Lang.Text("Minecraft.Launch.Login.RefreshAccountFailed.Title"), Lang.Text("Minecraft.Launch.Login.Continue"), Lang.Text("Common.Action.Cancel")) == 1)
-                    isIgnore = true;
-            });
-            if (isIgnore) return new[] { "Ignore", "" };
-            // 用户取消或登录线程已结束，静默中止启动，避免落入下方的 JSON 解析空引用
-            throw new Exception("$$");
-        }
-
-        var resultJson = (JsonObject)ModBase.GetJson(result);
-        var accessToken = resultJson["access_token"].ToString();
-        var refreshToken = resultJson["refresh_token"].ToString();
-        return new[] { accessToken, refreshToken };
-    }
-
-
-    private class XBLTokenRequestData
-    {
-        public PropertiesData Properties { get; set; }
-        public string RelyingParty { get; set; }
-        public string TokenType { get; set; }
-
-        public class PropertiesData
-        {
-            public string AuthMethod { get; set; }
-            public string SiteName { get; set; }
-            public string RpsTicket { get; set; }
-        }
-    }
-
-    /// <summary>
-    ///     正版验证步骤 2：从 OAuth accessToken 获取 XBLToken
-    /// </summary>
-    /// <param name="accessToken">OAuth accessToken</param>
-    /// <returns>XBLToken</returns>
-    private static string MsLoginStep2(string accessToken)
-    {
-        ModProfile.ProfileLog("开始正版验证 Step 2/6: 获取 XBLToken");
-        if (string.IsNullOrEmpty(accessToken))
-            throw new ArgumentException("传入的 AccessToken 为空", nameof(accessToken));
-        var requestData = new XBLTokenRequestData
-        {
-            Properties = new XBLTokenRequestData.PropertiesData
-            {
-                AuthMethod = "RPS",
-                SiteName = "user.auth.xboxlive.com",
-                RpsTicket = $"d={accessToken}"
-            },
-            RelyingParty = "http://auth.xboxlive.com",
-            TokenType = "JWT"
-        };
-        string result = null;
-        try
-        {
-            using (var response = HttpRequest
-                       .CreatePost("https://user.auth.xboxlive.com/user/authenticate")
-                       .WithJsonContent(requestData)
-                       .SendAsync()
-                       .GetAwaiter()
-                       .GetResult())
-            {
-                response.EnsureSuccessStatusCode();
-                result = response.AsString();
-            }
-        }
-        catch (Exception ex)
-        {
-            ModProfile.ProfileLog("正版验证 Step 2/6 获取 XBLToken 失败：" + ex);
-            var isIgnore = false;
-            ModBase.RunInUiWait(() =>
-            {
-                if (!isLaunching)
-                    return;
-                if (ModMain.MyMsgBox(
-                        Lang.Text("Minecraft.Launch.Login.RefreshAccountFailed.Message"),
-                        Lang.Text("Minecraft.Launch.Login.RefreshAccountFailed.Title"), Lang.Text("Minecraft.Launch.Login.Continue"), Lang.Text("Common.Action.Cancel")) == 1)
-                    isIgnore = true;
-            });
-            if (isIgnore) return "Ignore";
-        }
-
-        var resultJson = (JsonObject)ModBase.GetJson(result);
-        var xBLToken = resultJson["Token"].ToString();
-        return xBLToken;
-    }
-
-
-    private class XSTSTokenRequestData
-    {
-        public PropertiesData Properties { get; set; }
-        public string RelyingParty { get; set; }
-        public string TokenType { get; set; }
-
-        public class PropertiesData
-        {
-            public string SandboxId { get; set; }
-            public List<string> UserTokens { get; set; }
-        }
-    }
-
-    /// <summary>
-    ///     正版验证步骤 3：从 XBLToken 获取 {XSTSToken, UHS}
-    /// </summary>
-    /// <returns>包含 XSTSToken 与 UHS 的字符串组</returns>
-    private static string[] MsLoginStep3(string xBLToken)
-    {
-        ModProfile.ProfileLog("开始正版验证 Step 3/6: 获取 XSTSToken");
-        if (string.IsNullOrEmpty(xBLToken))
-            throw new ArgumentException("XBLToken 为空，无法获取数据", nameof(xBLToken));
-        var requestData = new XSTSTokenRequestData
-        {
-            Properties = new XSTSTokenRequestData.PropertiesData
-            {
-                SandboxId = "RETAIL",
-                UserTokens = new[] { xBLToken }.ToList()
-            },
-            RelyingParty = "rp://api.minecraftservices.com/",
-            TokenType = "JWT"
-        };
-        string result;
-        using (var response = HttpRequest
-                   .CreatePost("https://xsts.auth.xboxlive.com/xsts/authorize")
-                   .WithJsonContent(requestData)
-                   .SendAsync()
-                   .GetAwaiter()
-                   .GetResult())
-        {
-            result = response.AsString();
-
-            if (!response.IsSuccess)
-            {
-                // 参考 https://github.com/PrismarineJS/prismarine-auth/blob/master/src/common/Constants.js
-                if (result.Contains("2148916227"))
-                {
-                    ModMain.MyMsgBox(Lang.Text("Minecraft.Launch.Login.Microsoft.Banned"), Lang.Text("Minecraft.Launch.Login.Failed"), Lang.Text("Minecraft.Launch.Login.IKnow"), isWarn: true);
-                    throw new Exception("$$");
-                }
-
-                if (result.Contains("2148916233"))
-                {
-                    if (ModMain.MyMsgBox(Lang.Text("Minecraft.Launch.Login.Microsoft.XboxNotRegistered"), Lang.Text("Minecraft.Launch.Login.Hint"), Lang.Text("Minecraft.Launch.Login.Register"), Lang.Text("Common.Action.Cancel")) == 1)
-                        ModBase.OpenWebsite("https://signup.live.com/signup");
-                    throw new Exception("$$");
-                }
-
-                if (result.Contains("2148916235"))
-                {
-                    ModMain.MyMsgBox(Lang.Text("Minecraft.Launch.Login.Microsoft.RegionBlocked"), Lang.Text("Minecraft.Launch.Login.Failed"), Lang.Text("Minecraft.Launch.Login.IKnow"));
-                    throw new Exception("$$");
-                }
-
-                if (result.Contains("2148916238"))
-                {
-                    if (ModMain.MyMsgBox(Lang.Text("Minecraft.Launch.Login.Microsoft.Underage.Message"),
-                            Lang.Text("Minecraft.Launch.Login.Hint"), Lang.Text("Minecraft.Launch.Login.Microsoft.Underage.AgeOver13"), Lang.Text("Minecraft.Launch.Login.Microsoft.Underage.AgeUnder13"), Lang.Text("Common.Option.IDontKnow")) == 1)
-                    {
-                        ModBase.OpenWebsite("https://account.live.com/editprof.aspx");
-                        ModMain.MyMsgBox(
-                            Lang.Text("Minecraft.Launch.Login.Microsoft.ChangeBirthDate.Message"),
-                            Lang.Text("Minecraft.Launch.Login.Hint"));
-                    }
-                    else
-                    {
-                        ModBase.OpenWebsite(
-                            "https://support.microsoft.com/zh-cn/account-billing/如何更改-microsoft-帐户上的出生日期-837badbc-999e-54d2-2617-d19206b9540a");
-                        ModMain.MyMsgBox(
-                            Lang.Text("Minecraft.Launch.Login.Microsoft.ChangeBirthDate.SupportMessage"),
-                            Lang.Text("Minecraft.Launch.Login.Hint"));
-                    }
-
-                    throw new Exception("$$");
-                }
-
-                ModProfile.ProfileLog("正版验证 Step 3/6 获取 XSTSToken 失败：" + response.StatusCode);
-                var isIgnore = false;
-                ModBase.RunInUiWait(() =>
-                {
-                    if (!isLaunching)
-                        return;
-                    if (ModMain.MyMsgBox(
-                            Lang.Text("Minecraft.Launch.Login.RefreshAccountFailed.Message"),
-                            Lang.Text("Minecraft.Launch.Login.RefreshAccountFailed.Title"), Lang.Text("Minecraft.Launch.Login.Continue"), Lang.Text("Common.Action.Cancel")) == 1)
-                        isIgnore = true;
-                });
-                if (isIgnore)
-                {
-                    return new[] { ModProfile.selectedProfile.AccessToken, "Ignore" };
-                    return default;
-                }
-
-                response.EnsureSuccessStatusCode();
-            }
-        }
-
-        var resultJson = (JsonObject)ModBase.GetJson(result);
-        var xSTSToken = resultJson["Token"].ToString();
-        var uhs = resultJson["DisplayClaims"]["xui"][0]["uhs"].ToString();
-        return new[] { xSTSToken, uhs };
-    }
-
-    /// <summary>
-    ///     正版验证步骤 4：从 {XSTSToken, UHS} 获取 Minecraft accessToken
-    /// </summary>
-    /// <param name="tokens">包含 XSTSToken 与 UHS 的字符串组</param>
-    /// <returns>Minecraft accessToken</returns>
-    private static string MsLoginStep4(string[] tokens)
-    {
-        ModProfile.ProfileLog("开始正版验证 Step 4/6: 获取 Minecraft AccessToken");
-        if (tokens.Length < 2 || string.IsNullOrEmpty(tokens.ElementAt(0)) || string.IsNullOrEmpty(tokens.ElementAt(1)))
-            throw new ArgumentException("传入的 XSTSToken 或者 UHS 错误", nameof(tokens));
-        var requestData = new Dictionary<string, string> { { "identityToken", $"XBL3.0 x={tokens[1]};{tokens[0]}" } };
-        string result;
-        try
-        {
-            using (var response = HttpRequest
-                       .CreatePost("https://api.minecraftservices.com/authentication/login_with_xbox")
-                       .WithJsonContent(requestData)
-                       .SendAsync()
-                       .GetAwaiter()
-                       .GetResult())
-            {
-                response.EnsureSuccessStatusCode();
-                result = response.AsString();
-            }
-        }
-        catch (HttpRequestException ex)
-        {
-            var message = ex.Message;
-            if (ex.StatusCode.Equals(HttpStatusCode.TooManyRequests))
-            {
-                ModBase.Log(ex, "正版验证 Step 4 汇报 429");
-                throw new Exception(Lang.Text("Minecraft.Launch.Login.Microsoft.TooManyRequests"));
-            }
-
-            if (ex.StatusCode is { } arg1 && arg1 == HttpStatusCode.Forbidden)
-            {
-                ModBase.Log(ex, "正版验证 Step 4 汇报 403");
-                throw new Exception(Lang.Text("Minecraft.Launch.Login.Microsoft.AbnormalIp"));
-            }
-
-            ModProfile.ProfileLog("正版验证 Step 4/6 获取 MC AccessToken 失败：" + ex);
-            var isIgnore = false;
-            ModBase.RunInUiWait(() =>
-            {
-                if (!isLaunching)
-                    return;
-                if (ModMain.MyMsgBox(
-                        Lang.Text("Minecraft.Launch.Login.RefreshAccountFailed.Message"),
-                        Lang.Text("Minecraft.Launch.Login.RefreshAccountFailed.Title"), Lang.Text("Minecraft.Launch.Login.Continue"), Lang.Text("Common.Action.Cancel")) == 1)
-                    isIgnore = true;
-            });
-            if (isIgnore)
-            {
-                return "Ignore";
-                return default;
-            }
-
-            throw;
-        }
-
-        var resultJson = (JsonObject)ModBase.GetJson(result);
-        var accessToken = resultJson["access_token"].ToString();
-        if (string.IsNullOrWhiteSpace(accessToken))
-            throw new Exception("获取到的 Minecraft AccessToken 为空，登录流程异常！");
-        return accessToken;
-    }
-
-    /// <summary>
-    ///     正版验证步骤 5：验证微软账号是否持有 MC，这也会刷新 XGP
-    /// </summary>
-    /// <param name="accessToken">Minecraft accessToken</param>
-    private static void MsLoginStep5(string accessToken)
-    {
-        ModProfile.ProfileLog("开始正版验证 Step 5/6: 验证账户是否持有 MC");
-        if (string.IsNullOrEmpty(accessToken))
-            throw new ArgumentException("传入的 AccessToken 为空", nameof(accessToken));
-        var result = "";
-        try
-        {
-            using (var response = HttpRequest
-                       .Create("https://api.minecraftservices.com/entitlements/mcstore")
-                       .WithBearerToken(accessToken)
-                       .SendAsync()
-                       .GetAwaiter()
-                       .GetResult())
-            {
-                response.EnsureSuccessStatusCode();
-                result = response.AsString();
-            }
-
-            var resultJson = (JsonObject)ModBase.GetJson(result);
-            if (!(resultJson.ContainsKey("items") && resultJson["items"].AsArray().Any(x =>
-                    x["name"]?.ToString() == "product_minecraft" || x["name"]?.ToString() == "game_minecraft")))
-            {
-                switch (ModMain.MyMsgBox(Lang.Text("Minecraft.Launch.Login.Microsoft.NotPurchased"),
-                            Lang.Text("Minecraft.Launch.Login.Failed"), Lang.Text("Minecraft.Launch.Login.Microsoft.PurchaseMinecraft"), Lang.Text("Common.Action.Cancel")))
-                {
-                    case 1:
-                    {
-                        ModBase.OpenWebsite(
-                            "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj");
-                        break;
-                    }
-                }
-
-                throw new Exception("$$");
-            }
-        }
-        catch (Exception ex)
-        {
-            ModBase.Log(ex, "正版验证 Step 5 异常：" + result);
-            throw;
-        }
-    }
-
-    /// <summary>
-    ///     正版验证步骤 6：从 Minecraft accessToken 获取 {UUID, UserName, ProfileJson}
-    /// </summary>
-    /// <param name="accessToken">Minecraft accessToken</param>
-    /// <returns>包含 UUID, UserName 和 ProfileJson 的字符串组</returns>
-    private static string[] MsLoginStep6(string accessToken)
-    {
-        ModProfile.ProfileLog("开始正版验证 Step 6/6: 获取玩家 ID 与 UUID 等相关信息");
-        if (string.IsNullOrEmpty(accessToken))
-            throw new ArgumentException("传入的 AccessToken 为空", nameof(accessToken));
-        string result;
-        try
-        {
-            using (var response = HttpRequest
-                       .Create("https://api.minecraftservices.com/minecraft/profile")
-                       .WithBearerToken(accessToken)
-                       .SendAsync()
-                       .GetAwaiter()
-                       .GetResult())
-            {
-                response.EnsureSuccessStatusCode();
-                result = response.AsString();
-            }
-        }
-        catch (HttpRequestException ex)
-        {
-            var message = ex.Message;
-            if (ex.StatusCode.Equals(HttpStatusCode.TooManyRequests))
-            {
-                ModBase.Log(ex, "正版验证 Step 6 汇报 429");
-                throw new Exception(Lang.Text("Minecraft.Launch.Login.Microsoft.TooManyRequests"));
-            }
-
-            if (ex.StatusCode is { } arg2 && arg2 == HttpStatusCode.NotFound)
-            {
-                ModBase.Log(ex, "正版验证 Step 6 汇报 404");
-                ModBase.RunInNewThread(() =>
-                {
-                    switch (ModMain.MyMsgBox(Lang.Text("Minecraft.Launch.Login.Microsoft.CreateProfile.Message"), Lang.Text("Minecraft.Launch.Login.Failed"), Lang.Text("Minecraft.Launch.Login.Microsoft.CreateProfile.Button"), Lang.Text("Common.Action.Cancel")))
-                    {
-                        case 1:
-                        {
-                            ModBase.OpenWebsite("https://www.minecraft.net/zh-hans/msaprofile/mygames/editprofile");
-                            break;
-                        }
-                    }
-                }, "Login Failed: Create Profile");
-                throw new Exception("$$");
-            }
-
-            ModProfile.ProfileLog("正版验证 Step 6/6 获取玩家档案信息失败：" + ex);
-            var isIgnore = false;
-            ModBase.RunInUiWait(() =>
-            {
-                if (!isLaunching)
-                    return;
-                if (ModMain.MyMsgBox(
-                        Lang.Text("Minecraft.Launch.Login.RefreshAccountFailed.Message"),
-                        Lang.Text("Minecraft.Launch.Login.RefreshAccountFailed.Title"), Lang.Text("Minecraft.Launch.Login.Continue"), Lang.Text("Common.Action.Cancel")) == 1)
-                    isIgnore = true;
-            });
-            if (isIgnore)
-            {
-                return new[] { ModProfile.selectedProfile.Uuid, ModProfile.selectedProfile.Username, "Ignore" };
-                return default;
-            }
-
-            throw;
-        }
-
-        var resultJson = (JsonObject)ModBase.GetJson(result);
-        var uuid = resultJson["id"].ToString();
-        var userName = resultJson["name"].ToString();
-        return new[] { uuid, userName, result };
-    }
 
     #endregion
 
     #region 第三方验证
 
-    private static void McLoginServerStart(ModLoader.LoaderTask<McLoginServer, McLoginResult> data)
+    private static void McLoginServerStartNew(ModLoader.LoaderTask<McLoginServer, McLoginResult> data)
     {
         var input = data.input;
-        var needRefresh = false;
-        var wasRefreshed = false;
-
-        ModProfile.ProfileLog("验证方式：" + input.Description);
-        data.Progress = 0.05d;
-
-        // 尝试验证登录（如果不需要重新选择档案且不是创建档案）
-        if (!input.ForceReselectProfile && !ModProfile.isCreatingProfile)
+        LogWrapper.Info("Profile","验证方式：" + input.Description);
+        data.Progress = 0.1d;
+        var existing = input.IsExist && !ProfileService.IsCreatingProfile ? ProfileService.Current : null;
+        var stored = ProfileService.AuthenticateAsync(input.ProviderType, new AuthenticationRequest
         {
-            try
-            {
-                ThrowIfAborted(data);
-                McLoginRequestValidate(ref data);
-                data.Progress = 0.95d;
-                return; // 登录成功，直接返回
-            }
-            catch (WebException ex)
-            {
-                _HandleHttpWebException(ex, "验证登录失败");
-            }
-            catch (HttpResponseException ex){
-                ModProfile.ProfileLog($"验证登录失败: {ex}");
-            }
-            catch (Exception ex)
-            {
-                _HandleException(ex, "验证登录失败", "Minecraft.Launch.Login.Auth.ValidationFailed.WithDetail");
-            }
+            Server = input.BaseUrl,
+            DiscoveryAddress = input.DiscoveryAddress,
+            Username = input.UserName,
+            Password = input.Password,
+            ForceRefresh = data.isForceRestarting,
+            ForceReselectProfile = input.ForceReselectProfile,
+            DeviceCodeHandler = input.ProviderType == ProfileType.YggdrasilConnect
+                ? ProfileUi.ShowDeviceCodeLoginAsync
+                : null,
+            ProfileSelector = (candidates, _) => Task.FromResult(_SelectAuthProfile(candidates))
+        }, existing, select: true, data.AbortedToken).GetAwaiter().GetResult();
+        if (data.IsAborted) throw new ThreadInterruptedException();
 
-            data.Progress = 0.25d;
-
-            // 尝试刷新登录
-            try
-            {
-                ThrowIfAborted(data);
-                McLoginRequestRefresh(ref data, needRefresh);
-                data.Progress = needRefresh ? 0.85d : 0.45d;
-                data.Progress = 0.95d;
-                return; // 刷新成功，直接返回
-            }
-            catch (Exception ex)
-            {
-                ModProfile.ProfileLog(Lang.Text("Minecraft.Launch.Login.Auth.RefreshFailed") + ": " + ex);
-                ModMain.MyMsgBox(
-                    Lang.Text("Minecraft.Launch.Login.Auth.RefreshFailed.WithDetail", ex.ToString()),
-                    Lang.Text("Minecraft.Launch.Login.Auth.FailedTitle"),
-                    isWarn: true);
-                if (wasRefreshed)
-                    throw new Exception(Lang.Text("Minecraft.Launch.Login.Auth.SecondRefreshFailed"), ex);
-            }
-        }
-
-        // 尝试普通登录
-        try
+        data.output = new McLoginResult
         {
-            ThrowIfAborted(data);
-            needRefresh = McLoginRequestLogin(ref data);
-        }
-        catch (WebException ex)
-        {
-            _HandleLoginHttpException(ex);
-        }
-        catch (Exception ex)
-        {
-            _HandleException(ex, "第三方登录失败", "Minecraft.Launch.Login.Auth.LoginFailed.WithDetail");
-        }
-
-        // 如果需要刷新，循环刷新一次
-        if (needRefresh)
-        {
-            ModProfile.ProfileLog("重新进行刷新登录");
-            wasRefreshed = true;
-            data.Progress = 0.65d;
-
-            try
-            {
-                ThrowIfAborted(data);
-                McLoginRequestRefresh(ref data, needRefresh);
-                data.Progress = 0.95d;
-                return;
-            }
-            catch (Exception ex)
-            {
-                ModProfile.ProfileLog(Lang.Text("Minecraft.Launch.Login.Auth.RefreshFailed") + ": " + ex);
-                ModMain.MyMsgBox(
-                    Lang.Text("Minecraft.Launch.Login.Auth.RefreshFailed.WithDetail", ex.ToString()),
-                    Lang.Text("Minecraft.Launch.Login.Auth.FailedTitle"),
-                    isWarn: true);
-                throw new Exception(Lang.Text("Minecraft.Launch.Login.Auth.SecondRefreshFailed"), ex);
-            }
-        }
-
-        // 最终完成
-        // 兜底校验：若走到这里仍未取得有效 AccessToken（例如回退登录的 HTTP 失败被 McLoginRequestLogin
-        // 吞掉并返回 false），说明登录实际失败，必须中止，避免带着空凭据继续启动（见 #3307 review）。
-        if (string.IsNullOrEmpty(data.output.AccessToken))
-            throw new Exception(Lang.Text("Minecraft.Launch.Login.Failed"));
-        data.Progress = 0.95d;
+            AccessToken = stored.AccessToken,
+            ClientToken = stored.ClientToken,
+            Uuid = stored.Uuid,
+            Name = stored.UserName,
+            Type = "Auth"
+        };
+        ProfileService.IsCreatingProfile = false;
+        data.Progress = 0.98d;
+        LogWrapper.Info("Profile","第三方验证完成");
     }
 
-    /// <summary>
-    ///     检查任务是否被中断
-    /// </summary>
-    private static void ThrowIfAborted(ModLoader.LoaderTask<McLoginServer, McLoginResult> data)
+    private static AuthenticationCandidate? _SelectAuthProfile(IReadOnlyList<AuthenticationCandidate> candidates)
     {
-        if (data.IsAborted)
-            throw new ThreadInterruptedException();
-    }
-
-    /// <summary>
-    ///     统一处理 HttpWebException
-    /// </summary>
-    private static void _HandleHttpWebException(WebException ex, string logPrefix)
-    {
-        var allMessage = ex.ToString();
-        ModProfile.ProfileLog(logPrefix + "：" + allMessage);
-
-        if ((!allMessage.Contains("超时") && !allMessage.Contains("imeout"))
-            || allMessage.Contains("403"))
-            return;
-        ModProfile.ProfileLog("已触发超时登录失败");
-        var message = Lang.Text("Minecraft.Launch.Login.Auth.Timeout.WithDetail", ex.ToString());
-        ModMain.MyMsgBox(
-            message,
-            Lang.Text("Minecraft.Launch.Login.Auth.FailedTitle"),
-            isWarn: true);
-
-        throw new Exception("$" + message);
-    }
-
-    /// <summary>
-    ///     统一处理普通异常
-    /// </summary>
-    private static void _HandleException(
-        Exception ex,
-        string logPrefix,
-        string userMessageKey)
-    {
-        ModProfile.ProfileLog(logPrefix + "：" + ex);
-        var message = Lang.Text(userMessageKey, ex.ToString());
-        ModMain.MyMsgBox(
-            message,
-            Lang.Text("Minecraft.Launch.Login.Auth.FailedTitle"),
-            isWarn: true);
-        throw new Exception("$" + message);
-    }
-
-    /// <summary>
-    ///     处理普通登录 HttpWebException
-    /// </summary>
-    private static void _HandleLoginHttpException(WebException ex)
-    {
-        ModProfile.ProfileLog("验证失败：" + ex);
-        var message = Lang.Text("Minecraft.Launch.Login.Auth.NetworkFailed.WithDetail", ex.ToString());
-        ModMain.MyMsgBox(
-            message,
-            Lang.Text("Minecraft.Launch.Login.Auth.FailedTitle"),
-            isWarn: true);
-        throw new Exception("$" + message);
-    }
-
-    // Server 登录：三种验证方式的请求
-    private static void McLoginRequestValidate(ref ModLoader.LoaderTask<McLoginServer, McLoginResult> data)
-    {
-        ModProfile.ProfileLog("验证登录开始（Validate, Authlib");
-        // 提前缓存信息，否则如果在登录请求过程中退出登录，设置项目会被清空，导致输出存在空值
-        var accessToken = "";
-        var clientToken = "";
-        var uuid = "";
-        var name = "";
-        if (ModProfile.selectedProfile is not null)
+        if (candidates.Count == 0) return null;
+        if (candidates.Count == 1) return candidates[0];
+        AuthenticationCandidate? selected = null;
+        ModBase.RunInUiWait(() =>
         {
-            accessToken = ModProfile.selectedProfile.AccessToken;
-            clientToken = ModProfile.selectedProfile.ClientToken;
-            uuid = ModProfile.selectedProfile.Uuid;
-            name = ModProfile.selectedProfile.Username;
-        }
-
-        // 发送登录请求
-        var requestData = new JsonObject { ["accessToken"] = accessToken, ["clientToken"] = clientToken };
-        Requester.Fetch(data.input.BaseUrl + "/validate",
-            new FetchParam
-            {
-                Method = "POST",
-                Content = requestData.ToJsonString(),
-                Headers = new Dictionary<string, string> { { "Accept-Language", "zh-CN" } },
-                ContentType = "application/json"
-            }); // 没有返回值的
-        // 将登录结果输出
-        data.output.AccessToken = accessToken;
-        data.output.ClientToken = clientToken;
-        data.output.Uuid = uuid;
-        data.output.Name = name;
-        data.output.Type = "Auth";
-        // 不更改缓存，直接结束
-        ModProfile.ProfileLog("验证登录成功（Validate, Authlib");
-    }
-
-    private static void McLoginRequestRefresh(ref ModLoader.LoaderTask<McLoginServer, McLoginResult> data,
-        bool requestUser)
-    {
-        try
-        {
-
-            var refreshInfo = new JsonObject();
-            var selectProfile = new JsonObject
-                { { "name", ModProfile.selectedProfile.Username }, { "id", ModProfile.selectedProfile.Uuid } };
-            refreshInfo.Add("selectedProfile", selectProfile);
-            refreshInfo.Add("accessToken", ModProfile.selectedProfile.AccessToken);
-            refreshInfo.Add("requestUser", true);
-            ModProfile.ProfileLog("刷新登录开始（Refresh, Authlib");
-            var loginJson = (JsonObject)ModBase.GetJson(Requester.Fetch(data.input.BaseUrl + "/refresh",
-                new FetchParam
-                {
-                    Method = "POST",
-                    Content = refreshInfo.ToJsonString(),
-                    Headers = new Dictionary<string, string> { { "Accept-Language", "zh-CN" } },
-                    ContentType = "application/json",
-                    RequireContent = true
-                }
-            ));
-            // 将登录结果输出
-            if (loginJson["selectedProfile"] is null)
-                throw new Exception(Lang.Text("Minecraft.Launch.Login.Auth.InvalidProfile", ModProfile.selectedProfile.Username));
-            data.output.AccessToken = loginJson["accessToken"].ToString();
-            data.output.ClientToken = loginJson["clientToken"].ToString();
-            data.output.Uuid = loginJson["selectedProfile"]["id"].ToString();
-            data.output.Name = loginJson["selectedProfile"]["name"].ToString();
-            data.output.Type = "Auth";
-            // 保存缓存
-            var profileIndex = ModProfile.profileList.IndexOf(ModProfile.selectedProfile);
-            ModProfile.profileList[profileIndex].Username = data.output.Name;
-            ModProfile.profileList[profileIndex].AccessToken = data.output.AccessToken;
-            ModProfile.profileList[profileIndex].ClientToken = data.output.ClientToken;
-            ModProfile.profileList[profileIndex].Uuid = data.output.Uuid;
-            ModProfile.profileList[profileIndex].Name = data.input.UserName;
-            ModProfile.profileList[profileIndex].Password = data.input.Password;
-            ModProfile.ProfileLog("刷新登录成功（Refresh, Authlib）");
-        }
-        catch (HttpResponseException ex)
-        {
-            // 刷新失败必须向上抛出：否则 McLoginServerStart 会把本次登录判为“刷新成功”、带着空令牌继续
-            // 启动，并丧失“回退到普通登录”的自动恢复机会。保留服务端错误详情作为消息，并把原始
-            // HttpResponseException（含状态码/堆栈）作为 InnerException 以便诊断；同时显式 Dispose 及时
-            // 释放底层 Response，不依赖终结器兜底（其回收时机不确定，可能令底层资源驻留）。
-            var message = _TryGetLastError(ex, out var detail) ? detail : ex.Message;
-            ex.Dispose();
-            throw new Exception(message, ex);
-        }
-    }
-
-    private static bool McLoginRequestLogin(ref ModLoader.LoaderTask<McLoginServer, McLoginResult> data)
-    {
-        try
-        {
-            var needRefresh = false;
-            ModProfile.ProfileLog("登录开始（Login, Authlib）");
-            var requestData = new JsonObject
-            {
-                ["agent"] = new JsonObject { ["name"] = "Minecraft", ["version"] = 1 },
-                ["username"] = data.input.UserName,
-                ["password"] = data.input.Password,
-                ["requestUser"] = true
-            };
-            var loginJson = (JsonObject)ModBase.GetJson(Requester.Fetch(data.input.BaseUrl + "/authenticate",
-                new FetchParam
-                {
-                    Method = "POST",
-                    Content = requestData.ToJsonString(),
-                    Headers = new Dictionary<string, string> { { "Accept-Language", "zh-CN" } },
-                    ContentType = "application/json",
-                    RequireContent = true
-                }));
-            // 检查登录结果
-            if (loginJson["availableProfiles"].AsArray().Count == 0)
-            {
-                if (data.input.ForceReselectProfile)
-                    HintService.Hint(Lang.Text("Minecraft.Launch.Login.Auth.NoProfileCannotSwitch"), HintType.Error);
-                throw new Exception(Lang.Text("Minecraft.Launch.Login.Auth.NoProfile"));
-            }
-
-            if (data.input.ForceReselectProfile && loginJson["availableProfiles"].AsArray().Count == 1)
-                HintService.Hint(Lang.Text("Minecraft.Launch.Login.Auth.OnlyOneProfile"), HintType.Error);
-            string selectedName = null;
-            string selectedId = null;
-            if ((loginJson["selectedProfile"] is null || data.input.ForceReselectProfile) &&
-                loginJson["availableProfiles"].AsArray().Count > 1)
-            {
-                // 要求选择档案；优先从缓存读取
-                needRefresh = true;
-                var cacheId = ModProfile.selectedProfile is not null ? ModProfile.selectedProfile.Uuid : "";
-                foreach (var profile in loginJson["availableProfiles"].AsArray())
-                    if ((profile["id"].ToString() ?? "") == (cacheId ?? ""))
-                    {
-                        selectedName = profile["name"].ToString();
-                        selectedId = profile["id"].ToString();
-                        ModProfile.ProfileLog("根据缓存选择的角色：" + selectedName);
-                    }
-
-                // 缓存无效，要求玩家选择
-                if (selectedName is null)
-                {
-                    ModProfile.ProfileLog("要求玩家选择角色");
-                    ModBase.RunInUiWait(() =>
-                    {
-                        var selectionControl = new List<IMyRadio>();
-                        var selectionJson = new List<JsonNode>();
-                        foreach (var profile in loginJson["availableProfiles"].AsArray())
-                        {
-                            selectionControl.Add(new MyRadioBox { Text = profile["name"].ToString() });
-                            selectionJson.Add(profile);
-                        }
-
-                        var selectedIndex = (int)ModMain.MyMsgBoxSelect(selectionControl, Lang.Text("Minecraft.Launch.Login.Auth.SelectProfile"));
-                        selectedName = selectionJson[selectedIndex]["name"].ToString();
-                        selectedId = selectionJson[selectedIndex]["id"].ToString();
-                    });
-
-                    ModProfile.ProfileLog("玩家选择的角色：" + selectedName);
-                }
-            }
-            else
-            {
-                selectedName = loginJson["selectedProfile"]["name"].ToString();
-                selectedId = loginJson["selectedProfile"]["id"].ToString();
-            }
-
-            // 将登录结果输出
-            data.output.AccessToken = loginJson["accessToken"].ToString();
-            data.output.ClientToken = loginJson["clientToken"].ToString();
-            data.output.Name = selectedName;
-            data.output.Uuid = selectedId;
-            data.output.Type = "Auth";
-            // 获取服务器信息
-            var response =
-                Requester.FetchString(data.input.BaseUrl.Replace("/authserver", ""));
-            var serverName = ModBase.GetJson(response)["meta"]?["serverName"]?.ToString() ?? data.input.BaseUrl.Replace("/authserver", "");
-            // 保存缓存
-            if (data.input.IsExist)
-            {
-                var profileIndex = ModProfile.profileList.IndexOf(ModProfile.selectedProfile);
-                ModProfile.profileList[profileIndex].Username = data.output.Name;
-                ModProfile.profileList[profileIndex].Uuid = data.output.Uuid;
-                ModProfile.profileList[profileIndex].ServerName = serverName;
-                ModProfile.profileList[profileIndex].AccessToken = data.output.AccessToken;
-                ModProfile.profileList[profileIndex].ClientToken = data.output.ClientToken;
-            }
-            else
-            {
-                var newProfile = new ModProfile.McProfile
-                {
-                    Type = McLoginType.Auth,
-                    Uuid = data.output.Uuid,
-                    Username = data.output.Name,
-                    Server = data.input.BaseUrl,
-                    ServerName = serverName,
-                    Name = data.input.UserName,
-                    Password = data.input.Password,
-                    AccessToken = data.output.AccessToken,
-                    ClientToken = data.output.ClientToken,
-                    Expires = 1743779140286L,
-                    Desc = ""
-                };
-                ModProfile.profileList.Add(newProfile);
-                ModProfile.selectedProfile = newProfile;
-                ModProfile.isCreatingProfile = false;
-            }
-
-            ModProfile.SaveProfile();
-            ModProfile.ProfileLog("登录成功（Login, Authlib）");
-            return needRefresh;
-        }
-        catch (HttpResponseException ex)
-        {
-            
-            if (_TryGetLastError(ex, out var message)) ModMain.MyMsgBox(message, Lang.Text("Minecraft.Launch.Login.Failed"));
-            ex.Dispose();
-            return false;
-        }
-        catch (Exception ex)
-        {
-            
-            ModProfile.ProfileLog($"第三方验证失败: {ex}");
-            if (ex.Message.StartsWithF("$")) throw;
-
-            throw new Exception(Lang.Text("Minecraft.Launch.Login.Auth.LoginFailed", ex.Message), ex);
-        }
-    }
-
-    private static bool _TryGetLastError(HttpResponseException ex,[NotNullWhen(true)] out string? message)
-    {
-        message = null;
-        try
-        {
-            using var responseStream = ex.Response?.Content.ReadAsStream();
-            if (responseStream is null) return false;
-            var result = JsonSerializer.Deserialize<YggdrasilAuthenticateResult>(responseStream, JsonCompat.SerializerOptions);
-            if (result?.ErrorMessage is null) return false;
-            message = result.ErrorMessage;
-            return true;
-        }
-        catch (Exception)
-        {
-            // Suppress Exception
-        }
-
-        return false;
+            var controls = candidates.Select(item => (IMyRadio)new MyRadioBox { Text = item.Name }).ToList();
+            var index = ModMain.MyMsgBoxSelect(controls, Lang.Text("Minecraft.Launch.Login.Auth.SelectProfile"));
+            if (index is >= 0 and < 100000) selected = candidates[index.Value];
+        });
+        return selected;
     }
 
     #endregion
@@ -1795,12 +795,12 @@ public static class ModLaunch
     private static void McLoginLegacyStart(ModLoader.LoaderTask<McLoginLegacy, McLoginResult> data)
     {
         var input = data.input;
-        ModProfile.ProfileLog($"验证方式：离线（{input.UserName}, {input.Uuid}）");
+        LogWrapper.Info("Profile",$"验证方式：离线（{input.UserName}, {input.Uuid}）");
         data.Progress = 0.1d;
         {
             ref var withBlock = ref data.output;
             withBlock.Name = input.UserName;
-            withBlock.Uuid = ModProfile.selectedProfile.Uuid;
+            withBlock.Uuid = input.Uuid;
             withBlock.Type = "Legacy";
         }
         // 将结果扩展到所有项目中

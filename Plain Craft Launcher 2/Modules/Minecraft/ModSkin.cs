@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using Microsoft.VisualBasic;
 using PCL.Core.App.Localization;
+using PCL.Core.Minecraft.Profile;
 using PCL.Core.UI;
 using PCL.Core.Utils;
 using PCL.Network;
@@ -75,10 +76,10 @@ public static class ModSkin
     public static string McSkinGetAddress(string uuid, string type)
     {
         if (string.IsNullOrEmpty(uuid))
-            throw new Exception(Lang.Text("Minecraft.Skin.Error.UuidEmpty"));
+            throw new ArgumentException(Lang.Text("Minecraft.Skin.Error.UuidEmpty"), nameof(uuid));
 
         if (uuid.StartsWith("00000"))
-            throw new Exception(Lang.Text("Minecraft.Skin.Error.OfflineNoSkin"));
+            throw new InvalidOperationException(Lang.Text("Minecraft.Skin.Error.OfflineNoSkin"));
 
         // 尝试读取缓存
         var cachePath = Path.Combine(ModBase.pathTemp, $"Cache\\Skin\\Index{type}.ini");
@@ -91,14 +92,14 @@ public static class ModSkin
         {
             "Mojang" => "https://sessionserver.mojang.com/session/minecraft/profile/",
             "Ms" => "https://sessionserver.mojang.com/session/minecraft/profile/",
-            "Auth" => ModProfile.selectedProfile.Server.Replace("/authserver", "") +
+            "Auth" => (ProfileService.Current?.Server ?? string.Empty).Replace("/authserver", "") +
                       "/sessionserver/session/minecraft/profile/",
             _ => throw new ArgumentException(Lang.Text("Minecraft.Skin.Error.InvalidSkinType", type ?? "null"))
         };
 
         var skinString = ModNet.NetGetCodeByRequestRetry(url + uuid);
         if (string.IsNullOrEmpty((string?)skinString))
-            throw new Exception(Lang.Text("Minecraft.Skin.Error.SkinReturnEmpty"));
+            throw new InvalidDataException(Lang.Text("Minecraft.Skin.Error.SkinReturnEmpty"));
 
         // 解析皮肤 Property
         string skinValue = null;
@@ -113,14 +114,14 @@ public static class ModSkin
                 }
 
             if (skinValue is null)
-                throw new Exception(Lang.Text("Minecraft.Skin.Error.PropertyNotFound"));
+                throw new InvalidDataException(Lang.Text("Minecraft.Skin.Error.PropertyNotFound"));
         }
         catch (Exception ex)
         {
             ModBase.Log(ex,
                 $"无法完成解析的皮肤返回值，可能是未设置自定义皮肤的用户：{skinString}",
                 ModBase.LogLevel.Developer);
-            throw new Exception(Lang.Text("Minecraft.Skin.Error.NoSkinData"), ex);
+            throw new InvalidDataException(Lang.Text("Minecraft.Skin.Error.NoSkinData"), ex);
         }
 
         // 解码 Base64 并解析 JSON
@@ -128,7 +129,7 @@ public static class ModSkin
         var skinJson = (JsonObject)ModBase.GetJson(decoded.ToLowerInvariant());
 
         if (skinJson["textures"]?["skin"]?["url"] is null)
-            throw new Exception(Lang.Text("Minecraft.Skin.Error.NoCustomSkin"));
+            throw new InvalidDataException(Lang.Text("Minecraft.Skin.Error.NoCustomSkin"));
 
         var skinUrl = skinJson["textures"]["skin"]["url"].ToString();
         skinUrl = skinUrl.Contains("minecraft.net/") ? skinUrl.Replace("http://", "https://") : skinUrl;

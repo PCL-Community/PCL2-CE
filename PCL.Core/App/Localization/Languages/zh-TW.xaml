@@ -1502,8 +1502,11 @@
     <sys:String x:Key="Launch.Account.Auth.Password">密碼</sys:String>
     <sys:String x:Key="Launch.Account.Auth.Preset.LittleSkin">預設 - LittleSkin</sys:String>
     <sys:String x:Key="Launch.Account.Auth.Register">註冊帳戶</sys:String>
-    <sys:String x:Key="Launch.Account.Auth.Server">伺服器</sys:String>
     <sys:String x:Key="Launch.Account.Auth.ServerLabel">驗證伺服器: {0}</sys:String>
+    <sys:String x:Key="Launch.Account.Auth.SelectServer">選擇驗證伺服器</sys:String>
+    <sys:String x:Key="Launch.Account.Auth.OAuthLogin">開始 OAuth 登入</sys:String>
+    <sys:String x:Key="Launch.Account.Auth.UsePassword">»   使用密碼登入</sys:String>
+    <sys:String x:Key="Launch.Account.Auth.UseOAuth">»   使用 OAuth 登入</sys:String>
 
     <!-- Launch.Account.LoginDialog -->
 

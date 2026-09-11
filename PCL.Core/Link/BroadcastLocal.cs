@@ -34,7 +34,7 @@ public class BroadcastLocal(string description, int localPort) : IDisposable
         _cts?.Cancel();
         _isRunning = false;
 
-        _broadcastSocket?.SafeClose();
+        _broadcastSocket?.CloseGracefully();
 
         Console.WriteLine("停止向本地 Minecraft 客户端广播");
     }
@@ -80,7 +80,7 @@ public class BroadcastLocal(string description, int localPort) : IDisposable
     {
         Stop();
         _cts?.Dispose();
-        _broadcastSocket.SafeClose();
+        _broadcastSocket.CloseGracefully();
         GC.SuppressFinalize(this);
     }
 }

@@ -6,6 +6,8 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using PCL.Core.App;
 using PCL.Core.App.Localization;
+using PCL.Core.Minecraft.Profile;
+using PCL.Core.Minecraft.Profile.Models;
 using PCL.Core.Utils;
 using PCL.Network;
 
@@ -79,10 +81,9 @@ public partial class PageLaunchLeft
         RefreshButtonsUI();
 
         // 初始化档案
-        ModProfile.GetProfile();
-        if (!(ModProfile.profileList.Count == 0) && ModProfile.lastUsedProfile >= 0 &&
-            ModProfile.lastUsedProfile < ModProfile.profileList.Count)
-            ModProfile.selectedProfile = ModProfile.profileList[ModProfile.lastUsedProfile];
+        ProfileService.Load();
+        if (ProfileService.LastUsedProfile >= 0 && ProfileService.LastUsedProfile < ProfileService.Profiles.Count)
+            ProfileService.SelectAt(ProfileService.LastUsedProfile);
 
         // 加载实例
         ModBase.RunInNewThread(() =>
@@ -320,7 +321,7 @@ public partial class PageLaunchLeft
                 ModBase.Log("[Minecraft] 启动按钮：Minecraft 实例：" + ModInstanceList.McMcInstanceSelected.PathInstance);
                 ModMain.frmLaunchLeft.BtnLaunch.Text = Lang.Text("Launch.Home.Button.Launch");
                 ModMain.frmLaunchLeft.BtnInstance.IsEnabled = true;
-                if (ModProfile.selectedProfile is not null)
+                if (ProfileService.Current is not null)
                     BtnLaunch.IsEnabled = true;
                 else
                     BtnLaunch.IsEnabled = false;
@@ -563,22 +564,23 @@ public partial class PageLaunchLeft
     public void PageChangeToLaunching()
     {
         // 修改验证方式
-        switch (ModProfile.selectedProfile.Type)
+        switch (ProfileService.Current?.ProfileType)
         {
-            case ModLaunch.McLoginType.Legacy:
+            case ProfileType.Offline:
             {
                 LabLaunchingMethod.Text = Lang.Text("Launch.Account.Type.Offline");
                 break;
             }
-            case ModLaunch.McLoginType.Ms:
+            case ProfileType.Microsoft:
             {
                 LabLaunchingMethod.Text = Lang.Text("Launch.Account.Type.Microsoft");
                 break;
             }
-            case ModLaunch.McLoginType.Auth:
+            case ProfileType.Authlib:
+            case ProfileType.YggdrasilConnect:
             {
-                LabLaunchingMethod.Text = Lang.Text("Launch.Account.Type.ThirdParty") + (!string.IsNullOrEmpty(ModProfile.selectedProfile.ServerName)
-                    ? " / " + ModProfile.selectedProfile.ServerName
+                LabLaunchingMethod.Text = Lang.Text("Launch.Account.Type.ThirdParty") + (!string.IsNullOrEmpty(ProfileService.Current?.ServerName)
+                    ? " / " + ProfileService.Current.ServerName
                     : "");
                 break;
             }
@@ -803,7 +805,7 @@ public partial class PageLaunchLeft
             if (targetLoginType == ModLaunch.McLoginType.Legacy)
                 type = PageType.Offline;
         }
-        else if (ModProfile.selectedProfile is not null)
+        else if (ProfileService.Current is not null)
         {
             type = PageType.ProfileSkin;
             BtnLaunch.IsEnabled = true;
@@ -833,7 +835,7 @@ public partial class PageLaunchLeft
     {
         // 获取名称
         return new ModBase.EqualableList<string>
-            { ModProfile.selectedProfile.Username, ModProfile.selectedProfile.Uuid };
+            { ProfileService.Current?.UserName ?? "", ProfileService.Current?.Uuid ?? "" };
     }
 
     private static void SkinMsLoad(ModLoader.LoaderTask<ModBase.EqualableList<string>, string> data)
@@ -848,15 +850,15 @@ public partial class PageLaunchLeft
         // 获取 Url
         var userName = data.input[0];
         var uuid = data.input[1];
-        if (ModProfile.selectedProfile is not null)
+        if (ProfileService.Current is not null)
         {
-            userName = ModProfile.selectedProfile.Username;
-            uuid = ModProfile.selectedProfile.Uuid;
+            userName = ProfileService.Current.UserName;
+            uuid = ProfileService.Current.Uuid;
         }
 
         if (string.IsNullOrEmpty(userName))
         {
-            data.output = ModBase.pathImage + "Skins/" + ModSkin.McSkinSex(ModProfile.GetOfflineUuid(userName)) +
+            data.output = ModBase.pathImage + "Skins/" + ModSkin.McSkinSex(ProfileUi.GetOfflineUuid(userName)) +
                           ".png";
             ModBase.Log("[Minecraft] 获取微软正版皮肤失败，ID 为空");
             goto Finish;
@@ -884,7 +886,7 @@ public partial class PageLaunchLeft
             if (ex.ToString().Contains("429"))
             {
                 data.output = ModBase.pathImage + "Skins/" +
-                              ModSkin.McSkinSex(ModProfile.GetOfflineUuid(userName)) + ".png";
+                              ModSkin.McSkinSex(ProfileUi.GetOfflineUuid(userName)) + ".png";
                 ModBase.Log(
                     Lang.Text("Launch.Skin.Error.MsRateLimited", userName),
                     ModBase.LogLevel.Hint,
@@ -893,13 +895,13 @@ public partial class PageLaunchLeft
             else if (ex.ToString().Contains("未设置自定义皮肤"))
             {
                 data.output = ModBase.pathImage + "Skins/" +
-                              ModSkin.McSkinSex(ModProfile.GetOfflineUuid(userName)) + ".png";
+                               ModSkin.McSkinSex(ProfileUi.GetOfflineUuid(userName)) + ".png";
                 ModBase.Log("[Minecraft] 用户未设置自定义皮肤，跳过皮肤加载");
             }
             else
             {
                 data.output = ModBase.pathImage + "Skins/" +
-                              ModSkin.McSkinSex(ModProfile.GetOfflineUuid(userName)) + ".png";
+                               ModSkin.McSkinSex(ProfileUi.GetOfflineUuid(userName)) + ".png";
                 ModBase.Log(
                     ex,
                     Lang.Text("Launch.Skin.Error.MsGet", userName),
@@ -924,7 +926,7 @@ public partial class PageLaunchLeft
     private static ModBase.EqualableList<string> SkinLegacyInput()
     {
         return new ModBase.EqualableList<string>
-            { ModProfile.selectedProfile.Username, ModProfile.selectedProfile.Uuid };
+            { ProfileService.Current?.UserName ?? "", ProfileService.Current?.Uuid ?? "" };
     }
 
     private static void SkinLegacyLoad(ModLoader.LoaderTask<ModBase.EqualableList<string>, string> data)
@@ -951,7 +953,7 @@ public partial class PageLaunchLeft
     {
         // 获取名称
         return new ModBase.EqualableList<string>
-            { ModProfile.selectedProfile.Username, ModProfile.selectedProfile.Uuid };
+            { ProfileService.Current?.UserName ?? "", ProfileService.Current?.Uuid ?? "" };
     }
 
     private static void SkinAuthLoad(ModLoader.LoaderTask<ModBase.EqualableList<string>, string> data)

@@ -1,22 +1,23 @@
-﻿using System.Windows.Controls;
+﻿using System.IO;
+using System.Windows.Controls;
 using System.Windows.Input;
 using PCL.Core.App;
 using PCL.Core.App.Localization;
 using PCL.Core.UI.Controls;
 using PCL.Core.Utils;
 using PCL.Core.IO.Net.Http;
-using System.Text.Json.Serialization;
+using PCL.Core.Logging;
+using PCL.Core.Minecraft.IdentityModel;
+using PCL.Core.Minecraft.IdentityModel.OAuth;
 
 namespace PCL;
 
 public partial class MyMsgLogin
 {
     private readonly JsonObject data;
-    private string deviceCode; // 用于轮询的设备代码
-    private string oAuthUrl = ""; // OAuth 轮询验证地址
     private string userCode; // 需要用户在网页上输入的设备代码
     private string website; // 验证网页的网址
-    private Task? workingThread;
+    private readonly CancellationTokenSource _cancellation = new();
 
     public MyMsgLogin()
     {
@@ -34,7 +35,9 @@ public partial class MyMsgLogin
         if (myConverter.IsExited)
             return;
         myConverter.IsExited = true;
+        _cancellation.Cancel();
         myConverter.Result = result;
+        myConverter.CompletionHandler?.Invoke(result);
         ModBase.RunInUi(Close);
         Thread.Sleep(200);
         ModMain.frmMain.ShowWindowToTop();
@@ -43,8 +46,6 @@ public partial class MyMsgLogin
     private void Init()
     {
         userCode = (string)data["user_code"];
-        deviceCode = (string)data["device_code"];
-        ModBase.ClipboardSet(deviceCode);
         if (data["verification_uri_complete"] is not null)
         {
             website = (string)data["verification_uri_complete"];
@@ -61,57 +62,89 @@ public partial class MyMsgLogin
         CustomEventService.SetEventData(Btn1, website);
         CustomEventService.SetEventData(Btn2, userCode);
         // 启动工作线程
-        workingThread = WorkThreadAsync();
+        _ = WorkThreadAsync();
     }
-
-    private record ErrorBody(
-        [property: JsonPropertyName("error")] string Error,
-        [property: JsonPropertyName("error_description")] string Desc);
 
     private async Task WorkThreadAsync()
     {
-        await Task.Delay(2000).ConfigureAwait(false);
+        var token = _cancellation.Token;
+        try
+        {
+            await Task.Delay(2000, token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (myConverter.IsExited)
+        {
+            return;
+        }
         if (myConverter.IsExited)
             return;
         ModBase.OpenWebsite(website);
         ModBase.ClipboardSet(userCode);
-        var delayTime = (data["interval"].ToObject<int>() - 1) * 1000;
+        var device = data.ToObject<DeviceCodeData>() ?? throw new InvalidDataException("设备授权数据无效");
+        var delayTime = TimeSpan.FromSeconds(device.Interval ?? 5);
         // 轮询
         var unknownFailureCount = 0;
-        while (!myConverter.IsExited)
+        while (!myConverter.IsExited && !token.IsCancellationRequested)
         {
             try
             {
-                var bodyData = $"grant_type=urn:ietf:params:oauth:grant-type:device_code&client_id={Secrets.MSOAuthClientId}&device_code={deviceCode}&scope=XboxLive.signin%20offline_access";
-                using var result = await HttpRequest
-                    .Create("https://login.microsoftonline.com/consumers/oauth2/v2.0/token")
-                    .WithFormContent(bodyData)
-                    .SendAsync(enableLogging: false)
-                    .ConfigureAwait(false);
-                if (!result.IsSuccess)
+                if (myConverter.DeviceCodePoll is null)
+                    throw new InvalidOperationException("设备授权没有配置轮询处理程序。");
+                var resultJson = await myConverter.DeviceCodePoll(data, token).ConfigureAwait(false);
+                token.ThrowIfCancellationRequested();
+                if (resultJson is { IsError: true })
                 {
-                    var error = await result.AsJsonAsync<ErrorBody>()
-                        .ConfigureAwait(false);
-                    switch(error?.Error)
+                    switch(resultJson.Error)
                     {
                         case "authorization_pending":
                             {
-                                await Task.Delay(delayTime)
+                                await Task.Delay(delayTime, token)
                                     .ConfigureAwait(false);
                                 continue;
                             }
+                        case "slow_down":
+                            delayTime += TimeSpan.FromSeconds(5);
+                            await Task.Delay(delayTime, token).ConfigureAwait(false);
+                            continue;
+                        case "expired_token":
+                            Finished(new IdentityModelAuthenticationException(
+                                resultJson.Error, resultJson.ErrorDescription ?? "设备授权已过期。"));
+                            return;
+                        case "access_denied":
+                        case "authorization_declined":
+                            Finished(new IdentityModelAuthenticationException(
+                                resultJson.Error, resultJson.ErrorDescription ?? "用户拒绝了设备授权。"));
+                            return;
                         default:
                             {
-                                throw new Exception(error?.Error ?? "Unable to get body");
+                            throw new IdentityModelAuthenticationException(
+                                resultJson.Error ?? "invalid_response",
+                                resultJson.ErrorDescription ?? "Unable to get body");
                             }
                     }
                 }
                 // 获取结果
-                var ctx = await result.AsStringAsync().ConfigureAwait(false);
-                var resultJson = (JsonObject)ModBase.GetJson(ctx);
-                ModProfile.ProfileLog($"令牌过期时间：{resultJson["expires_in"]} 秒");
+                if (resultJson is null) throw new InvalidDataException("微软令牌返回为空");
+                if (myConverter.LoginResultHandler is not null)
+                {
+                    try
+                    {
+                        await myConverter.LoginResultHandler(resultJson, token).ConfigureAwait(false);
+                        token.ThrowIfCancellationRequested();
+                    }
+                    catch (Exception handlerException)
+                    {
+                        Finished(handlerException);
+                        return;
+                    }
+                }
+                LogWrapper.Info("Profile",$"令牌过期时间：{resultJson.ExpiresIn} 秒");
                 HintService.Hint(Lang.Text("Launch.Account.LoginDialog.Success"), HintType.Success);
-                Finished(new[] { resultJson["access_token"].ToString(), resultJson["refresh_token"].ToString() });
+                Finished(new[] { resultJson.AccessToken ?? string.Empty, resultJson.RefreshToken ?? string.Empty });
+                return;
+            }
+            catch (OperationCanceledException) when (myConverter.IsExited)
+            {
                 return;
             }
             catch (Exception ex)
@@ -121,11 +154,18 @@ public partial class MyMsgLogin
                     unknownFailureCount += 1;
                     ModBase.Log(ex, $"正版验证轮询第 {unknownFailureCount} 次失败");
                     ModBase.Log(ex.Message);
-                    await Task.Delay(2000).ConfigureAwait(false);
+                    try
+                    {
+                        await Task.Delay(2000, token).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) when (myConverter.IsExited)
+                    {
+                        return;
+                    }
                 }
                 else
                 {
-                    Finished(new Exception(Lang.Text("Launch.Account.LoginDialog.PollingFailed"), ex));
+                    Finished(new InvalidOperationException(Lang.Text("Launch.Account.LoginDialog.PollingFailed"), ex));
                     return;
                 }
             }
@@ -149,7 +189,6 @@ public partial class MyMsgLogin
             myConverter = converter;
             ShapeLine.StrokeThickness = ModBase.GetWPFSize(1d);
             data = (JsonObject)converter.Content;
-            oAuthUrl = converter.AuthUrl?.ToString() ?? "";
             Init();
         }
         catch (Exception ex)

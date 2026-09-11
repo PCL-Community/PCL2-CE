@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using PCL.Core.App;
 using PCL.Core.IO.Net;
+using PCL.Core.IO.Net.SocketForward;
 using PCL.Core.Link.Natayark;
 using PCL.Core.Logging;
 using PCL.Core.Utils;
@@ -18,7 +19,7 @@ public static class LobbyInfoProvider
     public static int ProtocolVersion { get; set; } = 6;
 
     public static BroadcastLocal? McBroadcast { get; internal set; }
-    public static TcpForward? McForward { get; internal set; }
+    public static TcpForwardWorker? McForward { get; internal set; }
 
     public class LobbyInfo
     {

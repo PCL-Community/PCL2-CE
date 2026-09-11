@@ -22,6 +22,7 @@ using static PCL.Core.Link.Natayark.NatayarkProfileManager;
 using LobbyType = PCL.Core.Link.Scaffolding.Client.Models.LobbyType;
 using PCL.Core.Link.McPing;
 using PCL.Core.IO.Net.Http;
+using PCL.Core.IO.Net.SocketForward;
 
 namespace PCL.Core.Link.Lobby;
 
@@ -91,11 +92,14 @@ public sealed class LobbyController
             var desc = hostname.IsNullOrWhiteSpace()
                 ? string.Empty
                 : Lang.Text("Link.Lobby.MotdDesc", hostname);
-            var tcpPortForForward = NetworkHelper.NewTcpPort();
 
-            McForward = new TcpForward(IPAddress.Loopback, tcpPortForForward, IPAddress.Loopback, localPort);
-            McBroadcast = new BroadcastLocal(Lang.Text("Link.Lobby.MotdFormat", desc), tcpPortForForward);
+            var tcpPortForForward = NetworkHelper.NewTcpPort();
+            McForward = new TcpForwardBuilder()
+                .BindLocal((ushort)tcpPortForForward)
+                .SetRemote(IPAddress.Loopback, (ushort)localPort)
+                .Build();
             McForward.Start();
+            McBroadcast = new BroadcastLocal(Lang.Text("Link.Lobby.MotdFormat", desc), tcpPortForForward);
             McBroadcast.Start();
 
             return scfEntity;

@@ -36,10 +36,14 @@ public class JsonWebToken(string token, OpenIdMetadata meta)
                 ValidateIssuerSigningKey = key is not null,
                 IssuerSigningKey = key is not null ? new JsonWebKeySet { Keys = { key } }.Keys[0] : null,
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.FromSeconds(60)
+                ClockSkew = TimeSpan.FromSeconds(60),
+                ValidAlgorithms = meta.IdTokenSigningAlgValuesSupported.Count == 0 ? null : meta.IdTokenSigningAlgValuesSupported
             };
 
             handler.ValidateToken(token, parameter, out var secToken);
+            if (secToken is JwtSecurityToken jwt && jwt.IssuedAt != DateTime.MinValue &&
+                jwt.IssuedAt > DateTime.UtcNow.Add(parameter.ClockSkew))
+                throw new SecurityTokenInvalidLifetimeException("Token issued-at time is in the future.");
             return secToken;
         }
         catch (Exception ex)

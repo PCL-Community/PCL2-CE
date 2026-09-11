@@ -28,7 +28,8 @@ public sealed class YggdrasilLegacyClient(YggdrasilLegacyAuthenticateOptions opt
         var credential = new YggdrasilCredential
         {
             User = options.Username,
-            Password = options.Password
+            Password = options.Password,
+            ClientToken = options.ClientToken
         };
         var address = $"{options.YggdrasilApiLocation}/authserver/authenticate";
 
@@ -55,7 +56,8 @@ public sealed class YggdrasilLegacyClient(YggdrasilLegacyAuthenticateOptions opt
 
         var refreshData = new YggdrasilRefresh
         {
-            AccessToken = options.AccessToken
+            AccessToken = options.AccessToken,
+            ClientToken = options.ClientToken
         };
         if (seleectedProfile is not null) refreshData.SelectedProfile = seleectedProfile;
 
@@ -84,9 +86,10 @@ public sealed class YggdrasilLegacyClient(YggdrasilLegacyAuthenticateOptions opt
 
         var validateData = new YggdrasilRefresh
         {
-            AccessToken = options.AccessToken
+            AccessToken = options.AccessToken,
+            ClientToken = options.ClientToken
         };
-        var address = $"{options.YggdrasilApiLocation}/authserver/invalidate";
+        var address = $"{options.YggdrasilApiLocation}/authserver/validate";
 
         using var response = await HttpRequest
             .CreatePost(address)
@@ -108,7 +111,8 @@ public sealed class YggdrasilLegacyClient(YggdrasilLegacyAuthenticateOptions opt
 
         var validateData = new YggdrasilRefresh
         {
-            AccessToken = options.AccessToken
+            AccessToken = options.AccessToken,
+            ClientToken = options.ClientToken
         };
         var address = $"{options.YggdrasilApiLocation}/authserver/invalidate";
 

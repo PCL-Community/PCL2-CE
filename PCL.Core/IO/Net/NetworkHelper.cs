@@ -8,11 +8,9 @@ public static class NetworkHelper
 {
     public static int NewTcpPort()
     {
-        var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-        return port;
+        using var so = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        so.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+        return so.LocalEndPoint == null ? 0 : ((IPEndPoint)so.LocalEndPoint).Port;
     }
     
     public static bool IsNetworkAvailable()
