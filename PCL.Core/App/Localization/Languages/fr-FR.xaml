@@ -207,9 +207,51 @@ Ce que vous pouvez essayer
     <sys:String x:Key="Crash.Report.Environment.EnvironmentSection">‐ Informations sur l'environnement -</sys:String>
     <sys:String x:Key="Crash.Report.Environment.Gpu">GPU {0}:{1} ({2} MiB, {3})</sys:String>
     <sys:String x:Key="Crash.Report.Environment.InstanceSection">‐ Informations sur l'instance -</sys:String>
-    <sys:String x:Key="Crash.Report.Environment.LauncherId">Code d'identification: {0}</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.LauncherId">Code d'identification:{0}</sys:String>
     <sys:String x:Key="Crash.Report.Environment.LauncherVersion">Version de PCL CE: {0}</sys:String>
     <sys:String x:Key="Crash.Report.Environment.MemoryAllocation">Allocation de mémoire (mémoire allouée / mémoire physique installée): {0} / {1} GiB ({2} MiB)</sys:String>
     <sys:String x:Key="Crash.Report.Environment.MinecraftFolder">Dossier Minecraft: {0}</sys:String>
     <sys:String x:Key="Crash.Report.Environment.OperatingSystem">Système d'exploitation: {0} (64 bits: {1}, ARM64: {2})</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.ProfileName">Nom du profil: {0} (méthode de connexion: {1})</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.ProfileSection">- Informations sur le profil -</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.SelectedJava">VM Java sélectionnée: {0}</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.ModListDirectory">Répertoire: {0}</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateEntry">{0} [{1}] &lt;-&gt; intégré dans {2} ({3})</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateHeuristic">(Correspondance par ID de mod, peut contenir des faux positifs.)</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateDescription">Ces mods peuvent entrer en conflit avec leurs copies intégrées et provoquer des crashs:</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateNone">Aucun</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateSection">=== Mods potentiellement dupliqués (installés séparément et intégrés via Jar-in-Jar) ===</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.JarInJarNone">Aucune information Jar-in-Jar trouvée</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.JarInJarSection">=== Informations Jar-in-Jar (mods activés uniquement) ===</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.ModListSection">=== Liste des mods ===</sys:String>
+    <sys:String x:Key="Crash.Suggestion.DisableTheseMods">Essayez de désactiver ces mods un par un, puis vérifiez si le jeu plante encore.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.DisableThisMod">Essayez de désactiver ce mod, puis vérifiez si le jeu plante encore.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.DuplicateMods">Chaque mod ne doit être installé qu'une seule fois. Supprimez les mods en double et relancez le jeu.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ExtractedModFile">Supprimez les dossiers de mods extraits du dossier mods, puis placez-y les fichiers .jar originaux des mods et réessayez.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.FileOrContentValidationFailed">Supprimez le jeu et les mods associés, puis téléchargez-les à nouveau.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.FollowLoaderInstructions">Suivez les messages du chargeur ci-dessus ou dans le rapport de crash pour résoudre le problème.</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.Log4j2NoLookups">Log4j2 NoLookups：{0}</sys:String>
+    <sys:String x:Key="Crash.Suggestion.GraphicsDriver.Generic">Essayez de mettre à jour ou de rétrograder le pilote graphique. Si nécessaire, passez à une version plus ancienne de Java.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.GraphicsDriver.IntelOrIntegrated">Si l'appareil dispose d'un GPU dédié, utilisez-le pour lancer PCL CE et Minecraft. Vous pouvez aussi mettre à jour ou rétrograder le pilote graphique.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.IncompleteForgeInstallation">Réinitialisez ou réinstallez Forge dans les paramètres de l'instance. Ne supprimez pas le dossier libraries lors de l'empaquetage d'une instance.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.InvalidModFileName">Supprimez ou renommez le fichier de mod concerné afin que son nom ne contienne que des lettres anglaises, des chiffres, des traits d'union, des traits de soulignement et des points.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.JavaIncompatible">Choisissez une version Java adaptée dans les paramètres de lancement selon la version de Minecraft et les exigences des mods.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.JavaTooNew">Dans les paramètres de lancement, passez à une version plus ancienne de Java, puis réessayez.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.LauncherOutdated">Vous utilisez une version obsolète de PCL CE. La mise à jour de PCL CE peut résoudre ce problème: Paramètres → Lanceur → Vérifier les mises à jour.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.MissingMixinBootstrap">Vérifiez que MixinBootstrap, le chargeur de mods et les dépendances associées sont correctement installés.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ModConfigCrash">Essayez de supprimer le fichier de configuration de ce mod, puis relancez le jeu. Si nécessaire, mettez à jour ou désactivez le mod.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ModLoaderIncompatible">Ouvrez les paramètres de l'instance et ajustez ou réinstallez la version du chargeur de mods.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ModMixinFailed">Désactivez les mods un par un pour identifier celui qui est incompatible avec l'environnement actuel ou qui pose problème.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ModRequiresJava11">Dans les paramètres de lancement, passez à Java 11 ou une version ultérieure, puis réessayez.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.MultipleForgeInInstanceJson">Réinitialisez ou réinstallez Forge dans les paramètres de l'instance. N'utilisez pas un autre lanceur pour modifier la version de Forge.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.NightConfigBug">Essayez de supprimer les fichiers de configuration des mods concernés, ou installez Night Config Fixes.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.OldForgeNewJavaIncompatible">Essayez de mettre à jour Forge ou de passer à une version plus ancienne de Java.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.OpenGl1282">Désactivez les packs de shaders et supprimez les packs de ressources récemment ajoutés, puis réessayez.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.OptiFineForgeIncompatible">Check the compatible OptiFine and Forge versions, then reinstall matching versions.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.OptiFineWorldLoadCrash">Essayez une autre version d'OptiFine, ou retirez OptiFine avant de réessayer d'entrer dans le monde.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.OutOfMemory">Augmentez la mémoire allouée au jeu dans les paramètres de lancement, et supprimez les packs de ressources, mods ou packs de shaders gourmands en ressources. Vous pouvez également fermer d'autres applications avant de lancer le jeu.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ResourcePackTooLarge">Supprimez les packs de ressources haute résolution ou réduisez leur résolution. Vous pouvez également mettre à jour le pilote graphique.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ShadersModWithOptiFine">Supprimez Shaders Mod. OptiFine prend déjà en charge les shaders.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.SpecificBlock.Multiple">Créez un nouveau monde pour vérifier si le jeu fonctionne normalement. Si c'est le cas, les blocs du monde d'origine peuvent être en cause.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.SpecificBlock.Single">Créez un nouveau monde pour vérifier si le jeu fonctionne normalement. Si c'est le cas, supprimez ce bloc avec un éditeur de carte ou désactivez le mod qui le fournit.</sys:String>
 </ResourceDictionary>
