@@ -222,6 +222,12 @@ public partial class PageInstanceLeft : IRefreshable
                     ModMain.frmInstanceModDisabled = new PageInstanceModDisabled();
                 return ModMain.frmInstanceModDisabled;
             }
+            case FormMain.PageSubType.VersionModJarInJar:
+            {
+                if (ModMain.frmInstanceModJarInJar is null)
+                    ModMain.frmInstanceModJarInJar = new PageInstanceCompJarInJar();
+                return ModMain.frmInstanceModJarInJar;
+            }
             case FormMain.PageSubType.VersionSetup:
             {
                 if (ModMain.frmInstanceSetup is null)

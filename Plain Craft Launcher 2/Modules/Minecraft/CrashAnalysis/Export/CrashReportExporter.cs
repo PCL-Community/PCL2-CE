@@ -264,6 +264,7 @@ internal sealed class CrashReportExporter
 
         try
         {
+            ModJarInJarCache.UseInstance(instance.PathInstance);
             var modsFolderName = ModLocalComp.GetPathNameByCompType(ModComp.CompType.Mod);
             var modsFolder = instance.Info.HasLabyMod
                 ? Path.Combine(instance.PathIndie, "labymod-neo", "fabric", instance.Info.VanillaName, modsFolderName)
@@ -300,6 +301,9 @@ internal sealed class CrashReportExporter
                 .ToList();
 
             var sb = new StringBuilder();
+
+            // 依赖警告与冲突关系放在最前，崩溃排查时第一眼可见
+            _AppendDependencyIssues(sb, activeMods, instance.Info.VanillaName);
 
             var modsByModId = new Dictionary<string, List<ModLocalComp.LocalCompFile>>(StringComparer.OrdinalIgnoreCase);
             foreach (var mod in activeMods)
@@ -345,8 +349,9 @@ internal sealed class CrashReportExporter
             foreach (var mod in activeMods)
             {
                 var line = "|  |-> " + (mod.Name ?? mod.FileName);
-                if (!string.IsNullOrWhiteSpace(mod.Version))
-                    line += $" ({mod.Version})";
+                var version = _CleanVersion(mod.Version);
+                if (!string.IsNullOrWhiteSpace(version))
+                    line += $" ({version})";
                 if (mod.Name != mod.FileName)
                     line += $" [{mod.FileName}]";
                 sb.AppendLine(line);
@@ -370,12 +375,86 @@ internal sealed class CrashReportExporter
                 sb.AppendLine(Lang.Text("Crash.Report.JarInJarMod.JarInJarNone"));
 
             CrashFileIo.WriteText(Path.Combine(reportFolder, ModInfoFileName), sb.ToString(), Encoding.UTF8);
+            ModJarInJarCache.Flush();
             LogWrapper.Info("Crash", "已导出模组列表及 Jar-in-Jar 信息");
         }
         catch (Exception ex)
         {
             LogWrapper.Warn(ex, "Crash", "导出模组信息失败");
         }
+        finally
+        {
+            // 复位本线程的"当前实例"：含 mods 目录不存在的 early return 与异常路径，
+            // 否则本线程后续懒加载别实例的 Mod 会被路由进本实例缓存
+            ModJarInJarCache.UseInstance(null);
+        }
+    }
+
+    // 把模组关系页的「缺失前置/版本不符」警告与「不兼容/不建议共存」冲突一并写入崩溃模组信息
+    private static void _AppendDependencyIssues(StringBuilder sb, List<ModLocalComp.LocalCompFile> activeMods,
+        string mc)
+    {
+        var jij = new ModJarInJarIndex(activeMods, mc);
+
+        sb.AppendLine(Lang.Text("Crash.Report.JarInJarMod.WarningSection"));
+        var warned = false;
+        foreach (var mod in activeMods)
+        {
+            var missing = new List<string>();
+            var mismatch = new List<string>();
+            var disabled = new List<string>();
+
+            void Probe(ModLocalComp.LocalCompFile who, string loader)
+            {
+                foreach (var d in ModJarInJarIndex.BuildOwnDependencies(who, loader))
+                {
+                    if (ModJarInJarIndex.IsPlatform(d.DepId) || d.Optional) continue;
+                    switch (jij.Analyze(who, d))
+                    {
+                        case JijDepStatus.Missing:
+                            missing.Add(d.DepId);
+                            break;
+                        case JijDepStatus.VersionMismatch:
+                            mismatch.Add(d.Raw is null ? d.DepId : d.DepId + " " + d.Raw);
+                            break;
+                        case JijDepStatus.Disabled:
+                            disabled.Add(d.DepId); // 版本匹配的 provider 全被禁用：运行时同样不可用
+                            break;
+                    }
+                }
+            }
+
+            Probe(mod, mod.DetectedLoader);
+            foreach (var node in jij.GetLoadableEmbedded(mod)) Probe(node, node.JijLoader);
+            if (missing.Count == 0 && mismatch.Count == 0 && disabled.Count == 0) continue;
+            var parts = new List<string>();
+            if (missing.Count > 0)
+                parts.Add(Lang.Text("Crash.Report.JarInJarMod.WarningMissing", string.Join(", ", missing.Distinct())));
+            if (mismatch.Count > 0)
+                parts.Add(Lang.Text("Crash.Report.JarInJarMod.WarningMismatch",
+                    string.Join(", ", mismatch.Distinct())));
+            if (disabled.Count > 0)
+                parts.Add(Lang.Text("Crash.Report.JarInJarMod.WarningDisabled",
+                    string.Join(", ", disabled.Distinct())));
+            sb.AppendLine("|-> " + (mod.Name ?? mod.FileName) + ": " + string.Join("; ", parts));
+            warned = true;
+        }
+
+        if (!warned) sb.AppendLine(Lang.Text("Crash.Report.JarInJarMod.WarningNone"));
+
+        sb.AppendLine().AppendLine("----------------------------").AppendLine();
+        sb.AppendLine(Lang.Text("Crash.Report.JarInJarMod.ConflictSection"));
+        var conflicts = jij.FindActiveConflicts();
+        if (conflicts.Count == 0)
+            sb.AppendLine(Lang.Text("Crash.Report.JarInJarMod.ConflictNone"));
+        else
+            foreach (var (a, b, hard) in conflicts)
+                sb.AppendLine("|-> [" + Lang.Text(hard
+                    ? "Crash.Report.JarInJarMod.ConflictIncompatible"
+                    : "Crash.Report.JarInJarMod.ConflictDiscouraged") + "] " +
+                    (a.Name ?? a.FileName) + " / " + (b.Name ?? b.FileName));
+
+        sb.AppendLine().AppendLine("----------------------------").AppendLine();
     }
 
     private static IEnumerable<ModLocalComp.LocalCompFile> _FlattenEmbedded(List<ModLocalComp.LocalCompFile> mods)
@@ -395,11 +474,16 @@ internal sealed class CrashReportExporter
         foreach (var mod in mods)
         {
             var line = indent + "|-> " + (mod.Name ?? mod.ModId ?? "?");
-            if (!string.IsNullOrWhiteSpace(mod.Version))
-                line += $" ({mod.Version})";
+            var version = _CleanVersion(mod.Version);
+            if (!string.IsNullOrWhiteSpace(version))
+                line += $" ({version})";
             builder.AppendLine(line);
             if (mod.EmbeddedMods.Any())
                 _AppendEmbeddedMods(builder, mod.EmbeddedMods, depth + 1);
         }
     }
+
+    // 未解析的版本占位符（如 Fabric ${version}、Forge ${file.jarVersion}）显示为空，避免裸 token
+    private static string _CleanVersion(string version)
+        => string.IsNullOrEmpty(version) || version.Contains("${") ? null : version;
 }

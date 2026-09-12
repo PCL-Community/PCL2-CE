@@ -76,6 +76,7 @@ public static class ModMain
     public static PageInstanceOverall? frmInstanceOverall;
     public static PageInstanceCompResource? frmInstanceMod;
     public static PageInstanceModDisabled? frmInstanceModDisabled;
+    public static PageInstanceCompJarInJar? frmInstanceModJarInJar;
     public static PageInstanceScreenshot? frmInstanceScreenshot;
     public static PageInstanceSaves? frmInstanceSaves;
     public static PageInstanceCompResource? frmInstanceShader;

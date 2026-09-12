@@ -1463,6 +1463,7 @@ public partial class FormMain
         VersionSchematic = 9,
         VersionInstall = 10,
         VersionServer = 11,
+        VersionModJarInJar = 12,
         VersionSavesInfo = 0,
         VersionSavesDatapack = 1
     }

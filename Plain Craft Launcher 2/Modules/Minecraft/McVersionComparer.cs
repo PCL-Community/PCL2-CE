@@ -41,15 +41,10 @@ public static class McVersionComparer
         var i = 0;
         while (true)
         {
-            // 两边均缺失，感觉是一个东西
+            // 两边 token（含补零）全部相等：视为同一版本。
+            // 不再回退原始串 ordinal 比较——那会把 "1.20" 判得小于 "1.20.0"（前缀关系≠更旧）
             if (lefts.Count - 1 < i && rights.Count - 1 < i)
-            {
-                if (string.CompareOrdinal(left, right) > 0)
-                    return 1;
-                if (string.CompareOrdinal(left, right) < 0)
-                    return -1;
                 return 0;
-            }
 
             // 确定两边的数值
             var leftValue = lefts.Count - 1 < i ? "0" : lefts[i];

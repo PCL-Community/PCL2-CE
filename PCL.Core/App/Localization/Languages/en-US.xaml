@@ -221,6 +221,15 @@
     <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateNone">None</sys:String>
     <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateSection">=== Potentially duplicated mods (installed standalone and bundled via Jar-in-Jar) ===</sys:String>
     <sys:String x:Key="Crash.Report.JarInJarMod.JarInJarNone">No Jar-in-Jar information found</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.WarningSection">=== Dependency warnings (missing / version mismatch) ===</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.WarningNone">No dependency issues found.</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.WarningMissing">missing prerequisite(s) [{0}]</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.WarningMismatch">version-incompatible prerequisite(s) [{0}]</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.WarningDisabled">disabled prerequisite(s) [{0}]</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.ConflictSection">=== Conflicts (incompatible / discouraged) ===</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.ConflictNone">No conflicts found.</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.ConflictIncompatible">Incompatible</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.ConflictDiscouraged">Discouraged</sys:String>
     <sys:String x:Key="Crash.Report.JarInJarMod.JarInJarSection">=== Jar-in-Jar information (enabled mods only) ===</sys:String>
     <sys:String x:Key="Crash.Report.JarInJarMod.ModListDirectory">Directory: {0}</sys:String>
     <sys:String x:Key="Crash.Report.JarInJarMod.ModListSection">=== Mod list ===</sys:String>
@@ -1076,6 +1085,41 @@
     <sys:String x:Key="Instance.Resource.Mod.Disabled.Message">You need to install a mod loader such as Forge, Fabric, etc. to use mods. Please go to the download page to install one.&#xA;If you have already installed a mod loader, you may have selected the wrong instance. Please switch to the correct instance.</sys:String>
     <sys:String x:Key="Instance.Resource.Mod.Disabled.SelectInstance">Select an instance</sys:String>
     <sys:String x:Key="Instance.Resource.Mod.Disabled.Title">This instance cannot install mods</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Entry">Mod Relations</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Entry.ToolTip">View mod dependencies, missing prerequisites and bundled (Jar-in-Jar) structure</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Message">An overview of dependencies and bundled structure between mods. Disabling or deleting a mod will warn about affected dependencies.</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.ParsePending.Title">Mods still loading</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.ParsePending.Message">Embedded mod relationships are still being analyzed in the background. Dependency cascade detection may be incomplete right now and could miss mods that should be handled together. Continue anyway?</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Empty.Title">No mod relations to analyze</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Empty.Message">None of this instance's mods declare dependencies or bundle other mods, or the mod list has not finished loading.</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Section.Warnings">Warnings</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Section.Conflicts">Conflicts</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Conflict.Tooltip">Incompatible: cannot load together; installing both will crash the game or prevent startup — remove one.&#10;Discouraged: can load together, but the author flagged compatibility issues that may cause bugs or broken features.</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Conflict.Incompatible">Incompatible</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Conflict.Discouraged">Discouraged</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Conflict.Pair">{0} and {1}</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Section.Relations">Mod relations</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Section.Bundled">Bundled mods</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Section.Dependencies">Dependencies</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Warning.Missing">{0} is missing prerequisite(s): {1}</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Warning.VersionMismatch">{0} has version-incompatible prerequisite(s): {1}</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Warning.Disabled">{0} has disabled prerequisite(s): {1}</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Dep.Installed">Installed</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Dep.Disabled">Disabled</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Dep.Bundled">Bundled</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Dep.VersionMismatch">Version mismatch</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Dep.Missing">Missing</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Dep.Optional">[optional]</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Bundled.Current">✓ used by this instance</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Bundled.Incompatible">⚠ incompatible with this version</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Bundled.Versions">{0} versions</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Bundled.From">[bundled · from {0}]</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Search.Hint">Search mods: name / ModId / dependency</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Cascade.OnlySelf">Only this mod</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Cascade.WithDisable">Also disable mods that depend on it</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Cascade.WithDelete">Also delete mods that depend on it</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Cascade.DisableTitle">Disabling this mod affects {0} mod(s) that depend on it. Choose how to proceed:</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Cascade.DeleteTitle">Deleting this mod affects {0} mod(s) that depend on it. Choose how to proceed:</sys:String>
     <sys:String x:Key="Instance.Resource.Schematic.DownloadMod">Download Litematica</sys:String>
     <sys:String x:Key="Instance.Resource.Schematic.Unavailable.Message">You may need to install the Litematica mod first. If you have already installed one, please launch the game once.&#xA;Alternatively, you may have selected the wrong instance. Please use the instance selection button to switch instances.</sys:String>
     <sys:String x:Key="Instance.Resource.Schematic.Unavailable.Title">Schematics unavailable for this instance</sys:String>

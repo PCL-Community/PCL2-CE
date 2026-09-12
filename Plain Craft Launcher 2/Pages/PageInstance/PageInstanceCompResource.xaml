@@ -26,6 +26,8 @@
                                             Margin="0,7,15,0" HorizontalAlignment="Left" />
                             <local:MyButton x:Name="BtnManageInfoExport" MinWidth="110" Text="{DynamicResource Instance.Resource.ExportInfo}" Padding="13,7"
                                             Margin="0,7,15,0" HorizontalAlignment="Left" ToolTip="{DynamicResource Instance.Resource.ExportInfo.ToolTip}" />
+                            <local:MyButton x:Name="BtnManageJarInJar" MinWidth="110" Text="{DynamicResource Instance.Resource.Mod.JarInJar.Entry}" Padding="13,7"
+                                            Margin="0,7,15,0" HorizontalAlignment="Left" ToolTip="{DynamicResource Instance.Resource.Mod.JarInJar.Entry.ToolTip}" />
                             <local:MyButton x:Name="BtnManageCheck" MinWidth="110" Text="{DynamicResource Instance.Resource.CheckMods}" Padding="13,7"
                                             Margin="0,7,15,0" HorizontalAlignment="Left"
                                             ToolTip="{DynamicResource Instance.Resource.CheckMods.ToolTip}"

@@ -222,6 +222,15 @@
     <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateNone">无</sys:String>
     <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateSection">=== 潜在重复模组===</sys:String>
     <sys:String x:Key="Crash.Report.JarInJarMod.JarInJarNone">未发现 Jar-in-Jar 信息</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.WarningSection">=== 依赖警告（缺失前置 / 版本不符）===</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.WarningNone">未发现依赖问题。</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.WarningMissing">缺少前置 [{0}]</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.WarningMismatch">前置版本不符 [{0}]</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.WarningDisabled">前置被禁用 [{0}]</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.ConflictSection">=== 冲突关系（不兼容 / 不建议共存）===</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.ConflictNone">未发现冲突。</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.ConflictIncompatible">不兼容</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.ConflictDiscouraged">不建议共存</sys:String>
     <sys:String x:Key="Crash.Report.JarInJarMod.JarInJarSection">=== Jar-in-Jar 信息（仅启用模组）===</sys:String>
     <sys:String x:Key="Crash.Report.JarInJarMod.ModListSection">=== 模组列表 ===</sys:String>
 
@@ -1076,6 +1085,41 @@
     <sys:String x:Key="Instance.Resource.Mod.Disabled.Message">你需要先安装 Forge、Fabric 等模组加载器才能使用模组，请在下载页面安装这些实例。&#xA;如果你已经安装过了模组加载器，那么你很可能选择了错误的实例，请点击实例选择按钮切换实例。</sys:String>
     <sys:String x:Key="Instance.Resource.Mod.Disabled.SelectInstance">实例选择</sys:String>
     <sys:String x:Key="Instance.Resource.Mod.Disabled.Title">该实例不可使用模组</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Entry">模组关系</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Entry.ToolTip">查看模组的依赖关系、缺失前置与内嵌（Jar-in-Jar）结构</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Message">这里概览模组间的依赖关系与内嵌结构。禁用或删除模组时会提示受影响的依赖项。</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.ParsePending.Title">模组仍在解析</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.ParsePending.Message">内嵌模组关系仍在后台解析，此时禁用或删除的连带依赖检测可能不完整，可能遗漏应一并处理的模组。是否仍要继续？</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Empty.Title">没有可分析的模组关系</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Empty.Message">当前实例的模组均无依赖声明或内嵌模组，或模组列表尚未加载完成。</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Section.Warnings">警告</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Section.Conflicts">冲突关系</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Conflict.Tooltip">「不兼容」：两者无法同时加载，一起安装会导致游戏崩溃或无法启动，需卸载其一。&#10;「不建议共存」：可以一起加载，但作者标注了兼容性问题，可能出现异常或功能失效。</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Conflict.Incompatible">不兼容</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Conflict.Discouraged">不建议共存</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Conflict.Pair">{0} 与 {1}</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Section.Relations">模组关系</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Section.Bundled">内嵌模组</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Section.Dependencies">依赖</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Warning.Missing">{0} 缺少前置：{1}</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Warning.VersionMismatch">{0} 前置版本不符：{1}</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Warning.Disabled">{0} 的前置被禁用：{1}</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Dep.Installed">已安装</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Dep.Disabled">已禁用</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Dep.Bundled">内嵌提供</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Dep.VersionMismatch">版本不符</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Dep.Missing">缺失</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Dep.Optional">[可选]</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Bundled.Current">✓ 当前实例使用</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Bundled.Incompatible">⚠ 不适配当前版本</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Bundled.Versions">{0} 个版本</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Bundled.From">[内置 · 来自 {0}]</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Search.Hint">搜索模组：名称 / ModId / 依赖</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Cascade.OnlySelf">仅操作此模组</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Cascade.WithDisable">连带禁用依赖它的模组</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Cascade.WithDelete">连带删除依赖它的模组</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Cascade.DisableTitle">禁用此模组会影响 {0} 个依赖它的模组，请选择处理方式</sys:String>
+    <sys:String x:Key="Instance.Resource.Mod.JarInJar.Cascade.DeleteTitle">删除此模组会影响 {0} 个依赖它的模组，请选择处理方式</sys:String>
     <sys:String x:Key="Instance.Resource.Schematic.DownloadMod">下载投影模组</sys:String>
     <sys:String x:Key="Instance.Resource.Schematic.Unavailable.Message">你可能需要先安装投影模组，如果已经安装过了投影模组请先启动一次游戏。&#xA;也可能是你选择错了实例，请点击实例选择按钮切换实例。</sys:String>
     <sys:String x:Key="Instance.Resource.Schematic.Unavailable.Title">该实例不可用投影原理图</sys:String>
