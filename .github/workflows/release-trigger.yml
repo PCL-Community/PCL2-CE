@@ -1,0 +1,55 @@
+name: Release Trigger
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  trigger_release:
+    if: ${{ github.event.pull_request.merged == true }}
+    permissions:
+      actions: write
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract version from PR title
+        id: extract
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "PR Title: $PR_TITLE"
+          
+          # 尝试匹配 "release-stable: VERSION" 或 "release-beta: VERSION" 格式，支持 SemVer（可选 v 前缀）
+          if [[ "$PR_TITLE" =~ (release-stable|release-beta):\ ?[vV]?([0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?(\+[a-zA-Z0-9.]+)?) ]]; then
+            VERSION="${BASH_REMATCH[2]}"
+            RELEASE_TYPE="${BASH_REMATCH[1]}"
+            
+            if [[ "$RELEASE_TYPE" == "release-beta" ]]; then
+              IS_BETA="true"
+            else
+              IS_BETA="false"
+            fi
+            
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "is_beta=$IS_BETA" >> $GITHUB_OUTPUT
+            echo "Extracted version: $VERSION, is_beta: $IS_BETA"
+          else
+            echo "Error: PR title does not match expected format 'release-stable: VERSION' or 'release-beta: VERSION' (SemVer)"
+            exit 1
+          fi
+
+      - name: Trigger Release Workflow
+        run: |
+          CONFIGURATION="Release"
+          if [[ "${{ steps.extract.outputs.is_beta }}" == "true" ]]; then
+            CONFIGURATION="Beta"
+          fi
+
+          gh workflow run release-publish.yml \
+            -f version=${{ steps.extract.outputs.version }} \
+            -f configuration="${CONFIGURATION}" \
+            -f prerelease=${{ steps.extract.outputs.is_beta }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

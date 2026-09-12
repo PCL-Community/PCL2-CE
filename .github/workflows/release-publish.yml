@@ -1,21 +1,34 @@
-name: Publish (Beta)
+name: Release Beta (Actual)
 
 permissions:
-  contents: read
+  contents: write
+  actions: write
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: 'Configuration to build (e.g., Release)'
+        required: true
+        type: string
+      version:
+        description: 'Version to release (e.g., 2.14.2)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Is this a prerelease?'
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   build:
-    if: ${{ github.event.release.prerelease }}
     strategy:
       matrix:
         include:
-          - configuration: Beta
+          - configuration: ${{ inputs.configuration }}
             architecture: x64
-          - configuration: Beta
+          - configuration: ${{ inputs.configuration }}
             architecture: ARM64
       fail-fast: false
 
@@ -26,14 +39,11 @@ jobs:
     secrets: inherit
 
   changelog:
-    permissions:
-      contents: write
     runs-on: ubuntu-latest
     continue-on-error: true
-    if: ${{ github.event.release.prerelease }}
     steps:
       - name: Checkout all
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -43,26 +53,26 @@ jobs:
       - name: Generate changelog
         run: git-cliff --latest -o CHANGELOG.md
 
-      - name: Add changelog to release
-        uses: softprops/action-gh-release@v2.5.0
+      - name: Create or update release
+        uses: softprops/action-gh-release@v3.0.0
         with:
-          tag_name: ${{ github.event.release.tag_name }}
+          draft: true
+          tag_name: v${{ inputs.version }}
+          name: Release ${{ inputs.version }}
           body_path: CHANGELOG.md
+          prerelease: ${{ inputs.prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   rename_and_release:
-    permissions:
-      contents: write
-      actions: write
     needs: [build, changelog]
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-          - configuration: Beta
+          - configuration: ${{ inputs.configuration }}
             architecture: x64
-          - configuration: Beta
+          - configuration: ${{ inputs.configuration }}
             architecture: ARM64
     steps:
       - name: Download Build Artifact
@@ -86,8 +96,10 @@ jobs:
           gpg --detach-sign --armor "PCL2_CE_${{ matrix.configuration }}_${{ matrix.architecture }}.exe"
 
       - name: Upload binary and signature to Release
-        uses: softprops/action-gh-release@v2.2.2
+        uses: softprops/action-gh-release@v3.0.0
         with:
+          draft: true
+          tag_name: v${{ inputs.version }}
           files: |
             PCL2_CE_${{ matrix.configuration }}_${{ matrix.architecture }}.exe
             PCL2_CE_${{ matrix.configuration }}_${{ matrix.architecture }}.exe.asc
@@ -96,7 +108,26 @@ jobs:
 
       - name: Trigger MirrorChyanUploading
         run: |
-          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_uploading.yml -f channel=beta -f arch=${{ matrix.architecture == 'x64' && 'x64' || 'arm64' }}
+          MRC_CHANNEL="stable"
+          if [ "${{ inputs.configuration }}" = "Beta" ]; then
+            MRC_CHANNEL="beta"
+          fi
+          
+          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_uploading.yml -f channel=$MRC_CHANNEL -f arch=${{ matrix.architecture == 'x64' && 'x64' || 'arm64' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish_draft:
+    needs: [rename_and_release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish Draft
+        uses: softprops/action-gh-release@v3.0.0
+        with:
+          tag_name: v${{ inputs.version }}
+
+      - name: Trigger MirrorChyanUploading
+        run: |
           gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_release_note.yml
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
