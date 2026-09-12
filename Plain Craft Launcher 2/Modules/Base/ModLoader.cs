@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualBasic.CompilerServices;
+using Microsoft.VisualBasic.CompilerServices;
 using PCL.Core.App;
 using PCL.Core.Utils;
 using System.Collections;
@@ -43,8 +43,7 @@ public static class ModLoader
             var newProgress = LoaderTaskbarProgressGet();
             // 若单个任务已中止，或全部任务已完成，则刷新并移除
             foreach (var Task in loaderTaskbar)
-                if (loaderTaskbar.All(l => l.State != ModBase.LoadState.Loading) ||
-                    Task.State == ModBase.LoadState.Waiting || Task.State == ModBase.LoadState.Aborted)
+                if (Task.State != ModBase.LoadState.Loading)
                 {
                     ModMain.frmSpeedLeft?.TaskRefresh(Task);
                     loaderTaskbar.Remove(Task);
