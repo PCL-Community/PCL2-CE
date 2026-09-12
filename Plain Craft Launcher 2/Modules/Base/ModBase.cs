@@ -3252,13 +3252,24 @@ public static class ModBase
                     foreach (var blackListType in new[]
                              {
                                  typeof(WebBrowser), typeof(Frame), typeof(MediaElement), typeof(ObjectDataProvider),
-                                 typeof(XamlReader), typeof(Window), typeof(XmlDataProvider)
+                                 typeof(XamlReader), typeof(Window), typeof(XmlDataProvider),
+                                 typeof(Process), typeof(ProcessStartInfo)
                              })
                     {
                         if (reader.Type is not null && blackListType.IsAssignableFrom(reader.Type.UnderlyingType))
                             throw new UnauthorizedAccessException($"不允许使用 {blackListType.Name} 类型。");
                         if (reader.Value is not null && Equals(reader.Value, blackListType.Name))
                             throw new UnauthorizedAccessException($"不允许使用 {blackListType.Name} 值。");
+                    }
+
+                    foreach (var blackListAssembly in new[] { "Microsoft.Xaml.Behaviors" })
+                    {
+                        if (reader.Type?.UnderlyingType?.Assembly.GetName().Name?.StartsWith(blackListAssembly, StringComparison.Ordinal) == true)
+                            throw new UnauthorizedAccessException($"不允许使用 {blackListAssembly} 程序集中的类型。");
+                        if (reader.Member?.DeclaringType?.UnderlyingType?.Assembly.GetName().Name?.StartsWith(blackListAssembly, StringComparison.Ordinal) == true)
+                            throw new UnauthorizedAccessException($"不允许使用 {blackListAssembly} 程序集中的成员。");
+                        if (reader.Value is string value && value.Contains(blackListAssembly, StringComparison.Ordinal))
+                            throw new UnauthorizedAccessException($"不允许引用 {blackListAssembly} 程序集。");
                     }
 
                     foreach (var blackListMember in new[] { "Code", "FactoryMethod", "Static" })
