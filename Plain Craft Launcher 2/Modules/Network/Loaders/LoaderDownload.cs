@@ -138,6 +138,9 @@ public class LoaderDownload : ModLoader.LoaderBase
             {
                 await FileDownloader.DownloadAsync(file.Urls, file.LocalPath, file.UseBrowserUserAgent, file.CustomUserAgent,
                     cancellationToken, enableParallelChunks, file).ConfigureAwait(false);
+                var checkError = file.Check?.Check(file.LocalPath);
+                if (checkError is not null)
+                    throw new IOException($"下载文件校验失败：{checkError}");
                 break;
             }
             catch (OperationCanceledException)
