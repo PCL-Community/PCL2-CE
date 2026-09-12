@@ -799,6 +799,7 @@
     <sys:String x:Key="Instance.Install.NoExtraInstall">No extra installation</sys:String>
     <sys:String x:Key="Instance.Install.Reset.Message">You are resetting the current instance.&#xA;PCL CE will re-download the files required for this instance from the internet and reinstall mod loaders (if any).&#xA;This operation will not lose your saves, mods, resource packs, etc.</sys:String>
     <sys:String x:Key="Instance.Install.Reset.Title">Reset this instance</sys:String>
+    <sys:String x:Key="Instance.Install.ToolTip.GameRunning">Cannot change the version while the game is running</sys:String>
 
     <!-- Instance.Export -->
 

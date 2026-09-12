@@ -36,6 +36,8 @@ public partial class PageInstanceInstall
     private void LoaderInit()
     {
         disabledPageAnimControls.Add(BtnSelectStart);
+        // 游戏运行期间禁用"开始修改/重置"按钮（防止文件被游戏占用导致崩溃 #3494）
+        ModVideoBack.GamingStateChanged += (_, _) => ModBase.RunInUi(_RefreshStartButtonState);
         // PageLoaderInit(LoadMinecraft, PanLoad, PanBack, Nothing, DlClientListLoader, AddressOf LoadMinecraft_OnFinish)
         PageLoaderInit(LoadMinecraft, PanLoad, PanAllBack, null, ModDownload.dlClientListLoader, _ => GetCurrentInfo());
         LoadOptiFine.StateChanged += (_, _, _) => { OptiFine_Loaded(); ReloadSelected(); };
@@ -95,6 +97,18 @@ public partial class PageInstanceInstall
     }
 
     #region 安装
+
+    /// <summary>
+    ///     根据游戏运行状态刷新"开始修改/重置"按钮的可用性。
+    ///     游戏运行期间禁止修改或重置实例（防止文件被游戏占用导致崩溃），
+    ///     并显示提示 Tooltip。
+    /// </summary>
+    private void _RefreshStartButtonState()
+    {
+        var blockedByGame = ModVideoBack.IsGaming;
+        BtnSelectStart.IsEnabled = !blockedByGame;
+        BtnSelectStart.ToolTip = blockedByGame ? Lang.Text("Instance.Install.ToolTip.GameRunning") : null;
+    }
 
     private void BtnSelectStart_Click(object sender, MouseButtonEventArgs mouseButtonEventArgs)
     {
@@ -442,7 +456,7 @@ public partial class PageInstanceInstall
         // 主预览
         ItemSelect.Title = PageInstanceLeft.McInstance.Name;
         ItemSelect.Logo = GetSelectLogo();
-        BtnSelectStart.IsEnabled = true;
+        _RefreshStartButtonState();
         if ((selectedInfo ?? "") == (currentInfo ?? ""))
         {
             ItemSelect.Info = selectedInfo;
@@ -1034,7 +1048,7 @@ public partial class PageInstanceInstall
     public void GetCurrentInfo()
     {
         ClearSelected();
-        BtnSelectStart.IsEnabled = true;
+        _RefreshStartButtonState();
         var currentInstance = PageInstanceLeft.McInstance.Info;
         _vanillaName = currentInstance.VanillaName;
         if (currentInstance.HasLiteLoader)
