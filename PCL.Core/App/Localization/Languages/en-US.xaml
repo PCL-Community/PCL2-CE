@@ -598,7 +598,7 @@
 
     <sys:String x:Key="Download.Comp.QuickDownload.Btn.ToolTip">Download the latest version</sys:String>
     <sys:String x:Key="Download.Comp.QuickDownload.ChooseInstance.Title">Select a target Minecraft instance</sys:String>
-    <sys:String x:Key="Download.Comp.QuickDownload.ChooseMethod.AskInstance">Select an instance…</sys:String>
+    <sys:String x:Key="Download.Comp.QuickDownload.ChooseMethod.AskInstance">Select instances…</sys:String>
     <sys:String x:Key="Download.Comp.QuickDownload.ChooseMethod.AskPath">Select a folder…</sys:String>
     <sys:String x:Key="Download.Comp.QuickDownload.ChooseMethod.CurrentInstance">Download to the current instance</sys:String>
     <sys:String x:Key="Download.Comp.QuickDownload.ChooseMethod.Title">Select a download destination</sys:String>

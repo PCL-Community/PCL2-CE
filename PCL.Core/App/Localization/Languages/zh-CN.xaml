@@ -598,7 +598,7 @@
 
     <sys:String x:Key="Download.Comp.QuickDownload.Btn.ToolTip">快速下载最新版本</sys:String>
     <sys:String x:Key="Download.Comp.QuickDownload.ChooseInstance.Title">选择要下载到的 Minecraft 实例</sys:String>
-    <sys:String x:Key="Download.Comp.QuickDownload.ChooseMethod.AskInstance">选择一个实例…</sys:String>
+    <sys:String x:Key="Download.Comp.QuickDownload.ChooseMethod.AskInstance">选择实例…</sys:String>
     <sys:String x:Key="Download.Comp.QuickDownload.ChooseMethod.AskPath">选择一个文件夹…</sys:String>
     <sys:String x:Key="Download.Comp.QuickDownload.ChooseMethod.CurrentInstance">下载到当前选中实例</sys:String>
     <sys:String x:Key="Download.Comp.QuickDownload.ChooseMethod.Title">选择下载方式</sys:String>

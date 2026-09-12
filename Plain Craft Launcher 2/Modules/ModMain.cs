@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -270,6 +270,11 @@ public static class ModMain
         public Action<object>? CompletionHandler;
 
         public bool ForceWait;
+
+        /// <summary>
+        ///     选择模式：是否允许勾选多个选项
+        /// </summary>
+        public bool MultiSelect;
 
         /// <summary>
         ///     有多个按钮时，是否给第一个按钮加高亮。
@@ -619,6 +624,44 @@ public static class ModMain
 
         ModBase.Log($"[Control] 选择弹框返回：{converter.Result ?? "null"}");
         return (int?)converter.Result;
+    }
+
+    /// <summary>
+    ///     显示多选选择框并返回勾选的所有项索引（从 0 开始）。若点击第二个按钮，则返回 Nothing。
+    /// </summary>
+    /// <param name="selections">需要展示的可勾选列表项。</param>
+    /// <param name="title">弹窗的标题。</param>
+    /// <param name="button1">显示的第一个按钮，默认为 “确定”。</param>
+    /// <param name="button2">显示的第二个按钮，默认为空。</param>
+    /// <param name="isWarn">是否为警告弹窗，若为 True，弹窗配色和背景会变为红色。</param>
+    public static List<int>? MyMsgBoxMultiSelect(List<MyListItem> selections, string? title = null,
+        string? button1 = null, string? button2 = "", bool isWarn = false)
+    {
+        title ??= GetDefaultDialogTitle();
+        button1 ??= GetDefaultConfirmText();
+        button2 ??= "";
+        // 将弹窗列入队列
+        var converter = new MyMsgBoxConverter
+        {
+            Type = MyMsgBoxType.Select, MultiSelect = true, Button1 = button1, Button2 = button2, Content = selections,
+            IsWarn = isWarn, Title = title
+        };
+        WaitingMyMsgBox.Add(converter);
+        // 虽然我也不知道这是啥但是能用就成了 :)
+        try
+        {
+            if (frmMain is not null)
+                frmMain.DragStop();
+            ComponentDispatcher.PushModal();
+            Dispatcher.PushFrame(converter.WaitFrame);
+        }
+        finally
+        {
+            ComponentDispatcher.PopModal();
+        }
+
+        ModBase.Log($"[Control] 多选弹框返回：{converter.Result ?? "null"}");
+        return (List<int>?)converter.Result;
     }
 
 

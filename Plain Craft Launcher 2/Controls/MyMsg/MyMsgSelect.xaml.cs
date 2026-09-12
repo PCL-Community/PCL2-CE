@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -82,11 +82,13 @@ public partial class MyMsgSelect
             {
                 PanSelection.Children.Add((UIElement)selection);
                 selection.Check += (sender, e) => OnChecked((IMyRadio)sender, e);
+                selection.Changed += (_, _) => _UpdateCheckedState();
 
                 // 3. Property configuration based on specific type
                 if (selection is MyListItem listItem)
                 {
-                    listItem.Type = MyListItem.CheckType.RadioBox;
+                    listItem.Type =
+                        myConverter.MultiSelect ? MyListItem.CheckType.CheckBox : MyListItem.CheckType.RadioBox;
                     listItem.MinHeight = 24.0;
                 }
                 else if (selection is MyRadioBox radioBox)
@@ -163,10 +165,26 @@ public partial class MyMsgSelect
 
     public void Btn1_Click(object sender, MouseButtonEventArgs e)
     {
-        if (myConverter.IsExited || selectedIndex == -1)
+        if (myConverter.IsExited)
             return;
-        myConverter.IsExited = true;
-        myConverter.Result = selectedIndex;
+        if (myConverter.MultiSelect)
+        {
+            var indices = new List<int>();
+            for (var i = 0; i < PanSelection.Children.Count; i++)
+                if (PanSelection.Children[i] is MyListItem { Checked: true })
+                    indices.Add(i);
+            if (indices.Count == 0)
+                return;
+            myConverter.IsExited = true;
+            myConverter.Result = indices;
+        }
+        else
+        {
+            if (selectedIndex == -1)
+                return;
+            myConverter.IsExited = true;
+            myConverter.Result = selectedIndex;
+        }
         Close();
     }
 
@@ -181,8 +199,22 @@ public partial class MyMsgSelect
 
     private void OnChecked(IMyRadio sender, EventArgs e)
     {
+        if (myConverter.MultiSelect)
+            return;
         Btn1.IsEnabled = true;
         selectedIndex = PanSelection.Children.IndexOf((UIElement)sender);
+    }
+
+    private void _UpdateCheckedState()
+    {
+        // 多选
+        if (!myConverter.MultiSelect)
+            return;
+        var checkedCount = 0;
+        foreach (var child in PanSelection.Children)
+            if (child is MyListItem { Checked: true })
+                checkedCount += 1;
+        Btn1.IsEnabled = checkedCount > 0;
     }
 
     private void Drag(object sender, MouseButtonEventArgs e)
