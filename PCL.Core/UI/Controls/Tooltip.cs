@@ -260,8 +260,20 @@ public static class Tooltip
             _Hush();
             return;
         }
+        
+        if (fe.IsEnabled)
+        {
+            if (ReferenceEquals(_target, fe) && _flyout is { IsOpen: true })
+                return;
 
-        if (fe.IsEnabled) return;
+            if (!ReferenceEquals(_target, fe)) _Hush();
+            _target = fe;
+            _latch?.Stop();
+            _latch = null;
+            _cursor = Mouse.GetPosition(fe);
+            _PopUp(fe, _cursor);
+            return;
+        }
 
         if (!ReferenceEquals(_target, fe)) _Hush();
         _target = fe;
@@ -307,9 +319,7 @@ public static class Tooltip
             _Hush();
             return;
         }
-
-        if (_closing) return;
-
+        
         _StartCycle(candidate, Mouse.GetPosition(candidate));
     }
 
@@ -354,6 +364,14 @@ public static class Tooltip
     private static bool _ShareAncestor(DependencyObject a, DependencyObject b)
     {
         if (ReferenceEquals(a, b)) return true;
+        
+        if (a is ComboBox comboA && b is ComboBoxItem itemB &&
+            ItemsControl.ItemsControlFromItemContainer(itemB) == comboA)
+            return true;
+        if (b is ComboBox comboB && a is ComboBoxItem itemA &&
+            ItemsControl.ItemsControlFromItemContainer(itemA) == comboB)
+            return true;
+
         for (var cur = VisualTreeHelper.GetParent(b); cur is not null; cur = VisualTreeHelper.GetParent(cur))
             if (ReferenceEquals(cur, a)) return true;
         for (var cur = VisualTreeHelper.GetParent(a); cur is not null; cur = VisualTreeHelper.GetParent(cur))
@@ -565,10 +583,10 @@ public static class Tooltip
 
         if (mode is PlacementMode.Mouse)
         {
-            _flyout.Placement = PlacementMode.Relative;
+            _flyout.Placement = PlacementMode.Left;
             _flyout.PlacementRectangle = default;
             _flyout.HorizontalOffset = Math.Round(pt.X + 15 + ToolTipService.GetHorizontalOffset(target));
-            _flyout.VerticalOffset = Math.Round(pt.Y + 25 + ToolTipService.GetVerticalOffset(target));
+            _flyout.VerticalOffset = Math.Round(pt.Y + 15 + ToolTipService.GetVerticalOffset(target));
         }
         else if (mode is PlacementMode.MousePoint)
         {
