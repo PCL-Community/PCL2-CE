@@ -2477,11 +2477,12 @@ public static class ModDownload
                                  ? Lang.Text("Minecraft.Update.UpdateTime") + Lang.Date(time)
                                  : Lang.Text("Minecraft.Update.UpdatedAt") + Lang.TimeSpan(time - DateTime.Now));
             var msgResult = ModMain.MyMsgBox(msgBoxText, Lang.Text("Minecraft.Update.Title"),
-                Lang.Text("Common.Action.Confirm"), Lang.Text("Common.Action.Download"),
+                Lang.Text("Common.Action.Download"),
                 (DateTime.Now - time).TotalHours > 3d ? Lang.Text("Common.Action.UpdateLog") : "",
-                button3Action: () => ModDownloadLib.McUpdateLogShow(version));
+                Lang.Text("Common.Action.Cancel"),
+                button2Action: () => ModDownloadLib.McUpdateLogShow(version));
             // 弹窗结果
-            if (msgResult == 2)
+            if (msgResult == 1)
                 // 下载
                 ModBase.RunInUi(() =>
                 {
