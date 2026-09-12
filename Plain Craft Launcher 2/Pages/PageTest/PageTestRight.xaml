@@ -1,0 +1,17 @@
+<local:MyPageRight x:Class="PCL.PageTestRight"
+                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:local="clr-namespace:PCL"
+                   PanScroll="{Binding ElementName=PanBack}">
+    <local:MyScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" x:Name="PanBack">
+        <StackPanel x:Name="PanMain" Margin="25,25,25,10" Grid.IsSharedSizeScope="True">
+            <!-- 测试功能放置区：往 MyCard 里添加你的测试控件即可 -->
+            <local:MyCard Margin="0,15" Title="测试功能（仅 Dev 构建）">
+                <StackPanel Margin="25,30,25,15">
+                    <TextBlock Text="在这里添加测试功能。" Foreground="{DynamicResource ColorBrushGray1}" Margin="0,0,0,15" />
+                    <local:MyButton MinWidth="120" Height="35" Text="弹出一条测试 Toast" Click="BtnToastTest_Click" />
+                </StackPanel>
+            </local:MyCard>
+        </StackPanel>
+    </local:MyScrollViewer>
+</local:MyPageRight>

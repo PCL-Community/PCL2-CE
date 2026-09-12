@@ -1,0 +1,10 @@
+<local:MyPageLeft x:Class="PCL.PageTestLeft"
+                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:local="clr-namespace:PCL"
+                  HorizontalAlignment="Left" Width="200">
+    <StackPanel Margin="20,30,20,0">
+        <TextBlock Text="测试页面" FontSize="20" FontWeight="Bold" Margin="10,0,0,6" />
+        <TextBlock Text="仅 Dev 构建编译的测试页面" Foreground="{DynamicResource ColorBrushGray1}" FontSize="12" Margin="10,0,0,0" />
+    </StackPanel>
+</local:MyPageLeft>

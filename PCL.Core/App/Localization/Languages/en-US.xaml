@@ -1870,6 +1870,7 @@
     <sys:String x:Key="Main.Tab.Launch">Launch</sys:String>
     <sys:String x:Key="Main.Tab.Settings">Settings</sys:String>
     <sys:String x:Key="Main.Tab.Tools">Tools</sys:String>
+    <sys:String x:Key="Main.Tab.Test">Test</sys:String>
     <sys:String x:Key="Main.Telemetry.Message">After telemetry data collection is enabled, the launcher will collect and report errors and device environment information. This can help developers fix potential issues and better plan and develop the launcher.&#xA;If this feature is enabled, we will collect the following information:&#xA;&#xA;- Errors that occur in the launcher&#xA;- Launcher version information and identifier&#xA;- Windows system version and architecture&#xA;- Installed physical memory size&#xA;- NAT and IPv6 support status&#xA;- Whether you have used the original PCL, HMCL, or BakaXL&#xA;&#xA;This data is not associated with you, and we will never sell it to any third party.&#xA;If you do not want to enable telemetry, you can choose to decline. This will not affect normal use of other features, but may affect developers' ability to fix potential bugs.&#xA;You can change this setting at any time in launcher settings.</sys:String>
     <sys:String x:Key="Main.Telemetry.Title">Enable telemetry data collection</sys:String>
     <sys:String x:Key="Main.Title.GameLog">Launch log</sys:String>

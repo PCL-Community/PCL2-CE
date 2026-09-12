@@ -98,6 +98,20 @@ public partial class FormMain
         HintWrapper.OnShow += HintService.HintWrapper_OnShow;
         // 加载 UI
         InitializeComponent();
+#if DEBUG
+        // 顶栏「测试」按钮。仅 Debug 构建下加入
+        var btnTitleTest = new MyRadioButton
+        {
+            Text = Lang.Text("Main.Tab.Test"),
+            Tag = "4",
+            Margin = new Thickness(5, 0, 5, 0),
+            Padding = new Thickness(2, 0, 2, 0),
+            LogoScale = 0.9,
+            SvgIcon = "lucide/flask-conical"
+        };
+        btnTitleTest.Check += BtnTitleSelect_Click;
+        PanTitleSelect.Children.Add(btnTitleTest);
+#endif
         Opacity = 0d;
         try
         {
@@ -1375,6 +1389,13 @@ public partial class FormMain
         /// </summary>
         Tools = 3,
 
+#if DEBUG
+        /// <summary>
+        ///     测试。这是一个顶级页面，仅在 Dev（Debug）构建下编译。
+        /// </summary>
+        Test = 4,
+#endif
+
         /// <summary>
         ///     设置。
         /// </summary>
@@ -1907,6 +1928,17 @@ public partial class FormMain
                             (FrameworkElement)ModMain.frmInstanceSavesLeft.PageGet(subType));
                         break;
                     }
+#if DEBUG
+                case PageType.Test: // 测试（仅 Dev 构建）
+                    {
+                        if (ModMain.frmTestLeft is null)
+                            ModMain.frmTestLeft = new PageTestLeft();
+                        if (ModMain.frmTestRight is null)
+                            ModMain.frmTestRight = new PageTestRight();
+                        PageChangeAnim(ModMain.frmTestLeft, ModMain.frmTestRight);
+                        break;
+                    }
+#endif
             }
 
             #endregion
