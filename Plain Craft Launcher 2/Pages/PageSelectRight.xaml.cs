@@ -532,17 +532,21 @@ public partial class PageSelectRight
         {
             var isShiftPressed = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
             var isHintIndie = mcInstance.state != McInstanceState.Error &&
-                              (mcInstance.PathIndie ?? "") != (ModFolder.mcFolderSelected ?? "");
+                              !string.Equals(mcInstance.PathIndie, ModFolder.mcFolderSelected,
+                                  StringComparison.OrdinalIgnoreCase);
             var confirmMsg = isShiftPressed
                 ? Lang.Text("Select.Instance.Delete.ConfirmPermanentMessage", mcInstance.Name)
                 : Lang.Text("Select.Instance.Delete.ConfirmMessage", mcInstance.Name);
             var confirmFullMsg = confirmMsg +
-                                 (isHintIndie ? "\r\n" + Lang.Text("Select.Instance.Delete.IsolatedWarning") : "");
+                                  (isHintIndie ? "\r\n" + Lang.Text("Select.Instance.Delete.IsolatedWarning") : "");
+            var backupHint = isHintIndie ? ModPersonalFiles.GetDeleteHint() : null;
+            if (backupHint is not null) confirmFullMsg += "\r\n" + backupHint;
             switch (ModMain.MyMsgBox(confirmFullMsg, Lang.Text("Select.Instance.Delete.ConfirmTitle"),
                         button2: Lang.Text("Common.Action.Cancel"), isWarn: true))
             {
                 case 1:
                 {
+                    if (isHintIndie && !ModPersonalFiles.TryHandleBeforeDelete(mcInstance)) return;
                     ModBase.IniClearCache(Path.Combine(mcInstance.PathIndie, "options.txt"));
                     ((DynamicCacheConfigStorage)ConfigService.GetProvider(ConfigSource.GameInstance)).InvalidateCache(
                         mcInstance.PathInstance);

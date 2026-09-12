@@ -977,6 +977,14 @@
     <sys:String x:Key="Instance.Overall.Shortcuts.SavesFolder">Saves folder</sys:String>
     <sys:String x:Key="Instance.Overall.Shortcuts.Title">Shortcuts</sys:String>
     <sys:String x:Key="Instance.Overall.Unfavorite">Unfavorite</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.Ask.BackupAndDelete">Back up and delete</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.Ask.DeleteWithoutBackup">Delete without backup</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.Ask.Message">Screenshots were found in instance {0}. Back them up before deletion?&#xA;Schematics will be backed up at the same time.</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.Ask.Title">Back up screenshots</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.AskHint">When screenshots are found, you will be asked whether to back them up before deletion.</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.DeleteHint">Files will be backed up to a folder before deletion.</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.Failed">Failed to back up screenshots or schematics. The instance was kept. See the error details.</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.Success">Backed up {0} personal file(s) to: {1}</sys:String>
 
     <!-- Instance.Overall.Icon -->
 
@@ -2820,6 +2828,10 @@
     <sys:String x:Key="Setup.Launch.Options.InstanceIsolation.NonRelease.ToolTip">Isolate snapshots, pre-releases, old versions, and April Fools' versions from other instances.</sys:String>
     <sys:String x:Key="Setup.Launch.Options.InstanceIsolation.None.ToolTip">All instances use the same profile. Saves, mods, resource packs, and other files are shared.&#xA;If multiple instances with mods installed are present, this may cause mod conflicts.</sys:String>
     <sys:String x:Key="Setup.Launch.Options.InstanceIsolation.ToolTip">When installing a new instance, the isolation option for the new instance will be automatically set accordingly.&#xA;To adjust the isolation policy for an existing instance, please go to instance settings.</sys:String>
+    <sys:String x:Key="Setup.Launch.Options.PersonalFilesBackup">Protect screenshots when deleting isolated instances</sys:String>
+    <sys:String x:Key="Setup.Launch.Options.PersonalFilesBackup.Always">Always back up</sys:String>
+    <sys:String x:Key="Setup.Launch.Options.PersonalFilesBackup.AskEveryTime">Ask every time</sys:String>
+    <sys:String x:Key="Setup.Launch.Options.PersonalFilesBackup.ToolTip">Backups are saved to PCL\PersonalFiles in the current Minecraft folder. Schematics are included when screenshots are backed up. Deletion is canceled if the backup fails.</sys:String>
 
     <!-- Setup.Launch.Options.Visibility -->
 

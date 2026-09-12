@@ -977,6 +977,14 @@
     <sys:String x:Key="Instance.Overall.Shortcuts.SavesFolder">存档文件夹</sys:String>
     <sys:String x:Key="Instance.Overall.Shortcuts.Title">快捷方式</sys:String>
     <sys:String x:Key="Instance.Overall.Unfavorite">从收藏夹中移除</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.Ask.BackupAndDelete">备份并删除</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.Ask.DeleteWithoutBackup">直接删除</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.Ask.Message">检测到实例 {0} 中有截图，是否在删除前备份？&#xA;投影原理图也会一并备份。</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.Ask.Title">备份截图</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.AskHint">检测到截图时，删除前会询问是否备份。</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.DeleteHint">删除前会备份文件到文件夹。</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.Failed">备份截图或投影原理图失败，实例未删除。请查看错误详情。</sys:String>
+    <sys:String x:Key="Instance.PersonalFiles.Backup.Success">已将 {0} 个回忆文件备份到：{1}</sys:String>
 
     <!-- Instance.Overall.Icon -->
 
@@ -2820,6 +2828,10 @@
     <sys:String x:Key="Setup.Launch.Options.InstanceIsolation.NonRelease.ToolTip">将 Minecraft 快照、预发布版、远古版本、愚人节版本与其他实例进行隔离</sys:String>
     <sys:String x:Key="Setup.Launch.Options.InstanceIsolation.None.ToolTip">所有实例均使用同一档案，存档、模组、资源包等均为公用。&#xA;若存在多个安装了模组的实例，可能会导致模组冲突。</sys:String>
     <sys:String x:Key="Setup.Launch.Options.InstanceIsolation.ToolTip">当安装新实例时，据此自动设置新实例的隔离选项。&#xA;若想调整已有实例的隔离策略，请前往它的实例设置。</sys:String>
+    <sys:String x:Key="Setup.Launch.Options.PersonalFilesBackup">删除隔离实例时保护截图</sys:String>
+    <sys:String x:Key="Setup.Launch.Options.PersonalFilesBackup.Always">始终备份</sys:String>
+    <sys:String x:Key="Setup.Launch.Options.PersonalFilesBackup.AskEveryTime">每次询问</sys:String>
+    <sys:String x:Key="Setup.Launch.Options.PersonalFilesBackup.ToolTip">备份文件会保存到当前 Minecraft 文件夹下的 PCL\PersonalFiles。备份截图时也会保存投影原理图；备份失败时会取消删除。</sys:String>
 
     <!-- Setup.Launch.Options.Visibility -->
 

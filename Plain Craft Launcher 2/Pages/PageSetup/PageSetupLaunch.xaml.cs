@@ -54,6 +54,7 @@ public partial class PageSetupLaunch
             TextArgumentTitle.Text = Config.Launch.Title;
             TextArgumentInfo.Text = Config.Launch.TypeInfo;
             ComboArgumentIndieV2.SelectedIndex = Config.Launch.IndieSolutionV2;
+            ComboArgumentPersonalFilesBackup.SelectedIndex = (int)Config.Launch.PersonalFilesBackup;
             ComboArgumentVisibie.SelectedIndex = (int)Config.Launch.LauncherVisibility;
             ComboArgumentPriority.SelectedValue = ((int)Config.Launch.ProcessPriority).ToString();
             ComboArgumentWindowType.SelectedIndex = (int)Config.Launch.GameWindowMode;

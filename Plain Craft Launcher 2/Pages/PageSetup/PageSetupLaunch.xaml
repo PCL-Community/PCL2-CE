@@ -161,6 +161,25 @@
                             <local:MyComboBoxItem Content="{DynamicResource Setup.Launch.Options.IpStack.Ipv6}" />
                         </local:MyComboBox>
                     </Grid>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Name" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="60" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left"
+                                   Text="{DynamicResource Setup.Launch.Options.PersonalFilesBackup}"
+                                   Margin="0,0,25,0" />
+                        <local:MyComboBox x:Name="ComboArgumentPersonalFilesBackup" Grid.Column="1"
+                                          Grid.ColumnSpan="2" Tag="LaunchArgumentPersonalFilesBackupMode"
+                                          SelectionChanged="ComboChange"
+                                          ToolTip="{DynamicResource Setup.Launch.Options.PersonalFilesBackup.ToolTip}">
+                            <local:MyComboBoxItem Content="{DynamicResource Common.Action.Close}" />
+                            <local:MyComboBoxItem Content="{DynamicResource Setup.Launch.Options.PersonalFilesBackup.AskEveryTime}"
+                                                  IsSelected="True" />
+                            <local:MyComboBoxItem Content="{DynamicResource Setup.Launch.Options.PersonalFilesBackup.Always}" />
+                        </local:MyComboBox>
+                    </Grid>
                 </StackPanel>
             </local:MyCard>
             <local:MyCard Margin="0,0,0,15" Title="{DynamicResource Setup.Launch.Memory.Title}">

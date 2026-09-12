@@ -65,6 +65,16 @@ public enum GameProcessPriority
 }
 
 /// <summary>
+/// 删除实例时的个人文件备份模式。
+/// </summary>
+public enum PersonalFilesBackupMode
+{
+    Disabled = 0,
+    AskEveryTime = 1,
+    Always = 2
+}
+
+/// <summary>
 /// 游戏启动后启动器可见性
 /// </summary>
 public enum LauncherVisibility
