@@ -21,6 +21,10 @@ public static partial class KernelInterop
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool _GetNamedPipeClientProcessId(IntPtr pipeHandle, out uint clientProcessId);
 
+    [LibraryImport("kernel32.dll", EntryPoint = "GetNamedPipeServerProcessId", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool _GetNamedPipeServerProcessId(IntPtr pipeHandle, out uint serverProcessId);
+
     [LibraryImport("kernel32.dll", EntryPoint = "GetLogicalProcessorInformationEx", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool _GetLogicalProcessorInformationEx(
@@ -96,6 +100,17 @@ public static partial class KernelInterop
     {
         if (!_GetNamedPipeClientProcessId(pipeHandle, out var clientProcessId)) _ThrowLastWin32Error();
         return clientProcessId;
+    }
+
+    /// <summary>
+    /// 获取指定命名管道当前连接的服务端进程 ID
+    /// </summary>
+    /// <param name="pipeHandle">命名管道句柄</param>
+    /// <returns>获取到的进程 ID</returns>
+    public static uint GetNamedPipeServerProcessId(IntPtr pipeHandle)
+    {
+        if (!_GetNamedPipeServerProcessId(pipeHandle, out var serverProcessId)) _ThrowLastWin32Error();
+        return serverProcessId;
     }
 
     /// <summary>
