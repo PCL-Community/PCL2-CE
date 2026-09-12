@@ -1069,6 +1069,13 @@
     <sys:String x:Key="Instance.Resource.ExportInfo">Export info</sys:String>
     <sys:String x:Key="Instance.Resource.ExportInfo.ToolTip">Export detailed version info for resources</sys:String>
     <sys:String x:Key="Instance.Resource.Favorite">Favorite</sys:String>
+    <sys:String x:Key="Instance.Resource.Import.ItemCount">{0} resource item(s) available</sys:String>
+    <sys:String x:Key="Instance.Resource.Import.NoAvailableInstance">No other instance contains resources available for import</sys:String>
+    <sys:String x:Key="Instance.Resource.Import.OverwriteConfirm.Message">A resource named {0} already exists. Overwrite it?</sys:String>
+    <sys:String x:Key="Instance.Resource.Import.OverwriteConfirm.Title">Confirm resource overwrite</sys:String>
+    <sys:String x:Key="Instance.Resource.Import.SelectInstance">Select source instance</sys:String>
+    <sys:String x:Key="Instance.Resource.Import.Success">Imported {0} resource item(s)</sys:String>
+    <sys:String x:Key="Instance.Resource.ImportFromInstance">Import from another instance</sys:String>
     <sys:String x:Key="Instance.Resource.InstallFromFiles">Install from files</sys:String>
     <sys:String x:Key="Instance.Resource.List.Loading">Loading resource list</sys:String>
     <sys:String x:Key="Instance.Resource.Loading">Loading resource list</sys:String>

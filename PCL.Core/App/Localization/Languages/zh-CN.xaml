@@ -1069,6 +1069,13 @@
     <sys:String x:Key="Instance.Resource.ExportInfo">导出信息</sys:String>
     <sys:String x:Key="Instance.Resource.ExportInfo.ToolTip">导出详细的资源的版本信息</sys:String>
     <sys:String x:Key="Instance.Resource.Favorite">收藏</sys:String>
+    <sys:String x:Key="Instance.Resource.Import.ItemCount">{0} 个可导入资源</sys:String>
+    <sys:String x:Key="Instance.Resource.Import.NoAvailableInstance">没有找到包含可导入资源的其他实例</sys:String>
+    <sys:String x:Key="Instance.Resource.Import.OverwriteConfirm.Message">已存在同名资源：{0}，是否覆盖？</sys:String>
+    <sys:String x:Key="Instance.Resource.Import.OverwriteConfirm.Title">资源覆盖确认</sys:String>
+    <sys:String x:Key="Instance.Resource.Import.SelectInstance">选择来源实例</sys:String>
+    <sys:String x:Key="Instance.Resource.Import.Success">已导入 {0} 个资源</sys:String>
+    <sys:String x:Key="Instance.Resource.ImportFromInstance">从其他实例导入</sys:String>
     <sys:String x:Key="Instance.Resource.InstallFromFiles">从文件安装</sys:String>
     <sys:String x:Key="Instance.Resource.List.Loading">正在加载资源列表</sys:String>
     <sys:String x:Key="Instance.Resource.Loading">正在加载资源列表</sys:String>
