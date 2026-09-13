@@ -2771,6 +2771,13 @@
     <sys:String x:Key="Setup.Launch.Memory.Auto.ToolTip">根據安裝的模組量與電腦剩餘記憶體，動態調整為遊戲分配的記憶體</sys:String>
     <sys:String x:Key="Setup.Launch.Memory.AvailableSuffix">可用 {0} GiB</sys:String>
     <sys:String x:Key="Setup.Launch.Memory.GameAllocation">遊戲分配</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.Max">最大記憶體（-Xmx）</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.Max.ToolTip">遊戲可使用的最大堆積記憶體大小</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.Initial">初始記憶體（-Xms）</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.Initial.ToolTip">遊戲啟動時預先分配的堆積記憶體大小，可以低於最大堆（-Xmx）。設為 0 表示不主動設定，由 JVM 自行決定。僅在手動配置記憶體分配時生效，啟用「鎖定記憶體分配」時不生效。</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.SuffixBoth">初始 {0} GiB，可用 {1} GiB</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.SuffixInitial">初始 {0} GiB</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.SuffixAvailable">可用 {0} GiB</sys:String>
     <sys:String x:Key="Setup.Launch.Memory.Title">遊戲記憶體</sys:String>
     <sys:String x:Key="Setup.Launch.Memory.UsedTotal">已使用記憶體 / 已安裝記憶體</sys:String>
     <sys:String x:Key="Setup.Launch.Memory.Warning.Java32Bit">32 位元 Java 只能分配最多 1 GiB 的記憶體。強烈建議換用 64 位元的 Java！</sys:String>

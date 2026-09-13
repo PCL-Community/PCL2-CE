@@ -34,6 +34,7 @@ public partial class PageInstanceSetup
         RadioRamType0.Check += RadioBoxChange;
         RadioRamType1.Check += RadioBoxChange;
         SliderRamCustom.Change += SliderChange;
+        SliderRamInitialCustom.Change += SliderChange;
 
         ComboServerLoginRequire.SelectionChanged += ComboServerLogin_Changed;
         TextServerAuthServer.TextChanged += TextBoxChange;
@@ -107,6 +108,7 @@ public partial class PageInstanceSetup
             var ramType = Config.Instance.MemorySolution[PageInstanceLeft.McInstance.PathInstance];
             ((MyRadioBox)FindName("RadioRamType" + ramType)).Checked = true;
             SliderRamCustom.Value = Config.Instance.CustomMemorySize[PageInstanceLeft.McInstance.PathInstance];
+            SliderRamInitialCustom.Value = Config.Instance.CustomInitialMemorySize[PageInstanceLeft.McInstance.PathInstance];
             RamType(ramType);
 
             // 服务器
@@ -248,6 +250,8 @@ public partial class PageInstanceSetup
         if (SliderRamCustom is null)
             return;
         SliderRamCustom.IsEnabled = type == 1;
+        // 锁定内存为全局配置，启用时 -Xms 恒等于 -Xmx，初始内存设置不生效
+        SliderRamInitialCustom.IsEnabled = type == 1 && !Config.Launch.LockMemory;
     }
 
     /// <summary>
@@ -277,7 +281,17 @@ public partial class PageInstanceSetup
         else
             SliderRamCustom.MaxValue = (int)Math.Round(Math.Floor((ramTotal - 16d) / 2d) + 33d);
         // 设置文本
-        LabRamGame.Text = $"{Lang.Number(ramGame, "N1")} GiB{(ramGame != ramGameActual ? $" ({Lang.Text("Setup.Launch.Memory.AvailableSuffix", Lang.Number(ramGameActual, "N1"))})" : "")}";
+        var ramInitial = GetInitialRam(PageInstanceLeft.McInstance);
+        string suffixText;
+        if (ramInitial.HasValue && ramGame != ramGameActual)
+            suffixText = Lang.Text("Setup.Launch.Memory.SuffixBoth", Lang.Number(ramInitial.Value, "N1"), Lang.Number(ramGameActual, "N1"));
+        else if (ramInitial.HasValue)
+            suffixText = Lang.Text("Setup.Launch.Memory.SuffixInitial", Lang.Number(ramInitial.Value, "N1"));
+        else if (ramGame != ramGameActual)
+            suffixText = Lang.Text("Setup.Launch.Memory.SuffixAvailable", Lang.Number(ramGameActual, "N1"));
+        else
+            suffixText = "";
+        LabRamGame.Text = $"{Lang.Number(ramGame, "N1")} GiB{(suffixText.Length > 0 ? $" ({suffixText})" : "")}";
         LabRamUsed.Text = $"{Lang.Number(ramUsed, "N1")} GiB";
         LabRamTotal.Text = $" / {Lang.Number(ramTotal, "N1")} GiB";
         LabRamWarn.Visibility =
@@ -524,20 +538,39 @@ public partial class PageInstanceSetup
         {
             // 手动配置
             var value = Config.Instance.CustomMemorySize[instancePath];
-            if (value <= 12)
-                ramGive = value * 0.1d + 0.3d;
-            else if (value <= 25)
-                ramGive = (value - 12) * 0.5d + 1.5d;
-            else if (value <= 33)
-                ramGive = (value - 25) * 1 + 8;
-            else
-                ramGive = (value - 33) * 2 + 16;
+            ramGive = PageSetupLaunch.GetRamFromTick(value);
         }
 
         // 若使用 32 位 Java，则限制为 1G
         if (is32BitJava ?? !ModJava.IsGameSet64BitJava(PageInstanceLeft.McInstance))
             ramGive = Math.Min(1d, ramGive);
         return ramGive;
+    }
+
+    /// <summary>
+    ///     获取当前设置的初始堆大小（-Xms）。单位为 GB；未启用自定义初始大小时返回 null。
+    /// </summary>
+    public static double? GetInitialRam(McInstance version, bool? is32BitJava = default)
+    {
+        // 锁定内存为全局配置，启用时 -Xms 恒等于 -Xmx，由锁定内存逻辑处理
+        if (Config.Launch.LockMemory)
+            return null;
+        // 自定义 JVM 参数含 -Xms 时由其决定实际初始堆，不再显示滑块值
+        if (PageSetupLaunch.HasCustomXms(version))
+            return null;
+        var instancePath = version?.PathInstance;
+        switch (Config.Instance.MemorySolution[instancePath])
+        {
+            case 2:
+                return PageSetupLaunch.GetInitialRam(version, true, is32BitJava);
+            case 1:
+                var initialTick = Config.Instance.CustomInitialMemorySize[instancePath];
+                if (initialTick <= 0)
+                    return null;
+                return Math.Min(PageSetupLaunch.GetRamFromTick(initialTick), GetRam(version, is32BitJava));
+            default:
+                return null;
+        }
     }
 
     #endregion

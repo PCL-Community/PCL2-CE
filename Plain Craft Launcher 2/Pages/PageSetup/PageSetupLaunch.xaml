@@ -177,18 +177,25 @@
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="9" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="9" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <local:MyRadioBox Text="{DynamicResource Setup.Launch.Memory.Auto}" Width="110" Checked="True" x:Name="RadioRamType0"
-                                          Tag="LaunchRamType/0" Margin="0,0,20,0" Check="RadioBoxChange"
+                                          Tag="LaunchRamType/0" Margin="0,0,20,9" Check="RadioBoxChange"
                                           ToolTip="{DynamicResource Setup.Launch.Memory.Auto.ToolTip}" ToolTipService.Placement="Right"
                                           ToolTipService.HorizontalOffset="-10" ToolTipService.VerticalOffset="-3" />
-                        <local:MyRadioBox Grid.Row="2" Text="{DynamicResource Common.Option.Customize}" x:Name="RadioRamType1" Tag="LaunchRamType/1"
-                                          Margin="0,0,20,0" Check="RadioBoxChange" />
+                        <local:MyRadioBox Grid.Row="1" Text="{DynamicResource Common.Option.Customize}" x:Name="RadioRamType1" Tag="LaunchRamType/1"
+                                          Margin="0,0,20,9" Check="RadioBoxChange" />
+                        <TextBlock Grid.Row="2" Text="{DynamicResource Setup.Launch.Memory.Max}" VerticalAlignment="Center" Margin="0,0,20,9"
+                                   ToolTip="{DynamicResource Setup.Launch.Memory.Max.ToolTip}" />
                         <local:MySlider Grid.Row="2" Grid.Column="1" IsEnabled="False" x:Name="SliderRamCustom"
-                                        Tag="LaunchRamCustom" MaxValue="49" Value="13" Change="SliderChange" />
+                                        Tag="LaunchRamCustom" MaxValue="49" Value="13" Change="SliderChange" Margin="0,0,12,9" />
+                        <TextBlock Grid.Row="3" Text="{DynamicResource Setup.Launch.Memory.Initial}" VerticalAlignment="Center" Margin="0,0,20,0"
+                                   ToolTip="{DynamicResource Setup.Launch.Memory.Initial.ToolTip}" />
+                        <local:MySlider Grid.Row="3" Grid.Column="1" IsEnabled="False" x:Name="SliderRamInitialCustom"
+                                        Tag="LaunchRamCustomInitial" MaxValue="49" Value="0" Change="SliderChange"
+                                        ToolTip="{DynamicResource Setup.Launch.Memory.Initial.ToolTip}" />
                     </Grid>
                     <Grid x:Name="PanRamDisplay" Margin="0,11,2,0" SnapsToDevicePixels="True">
                         <Grid.ColumnDefinitions>

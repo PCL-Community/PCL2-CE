@@ -106,7 +106,8 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="9" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
@@ -124,19 +125,26 @@
                             Width="110"
                             x:Name="RadioRamType0"
                             Tag="VersionRamType/0"
-                            Margin="0,0,20,0"
+                            Margin="0,0,20,9"
                             ToolTip="{DynamicResource Setup.Launch.Memory.Auto.ToolTip}"
                             ToolTipService.Placement="Right"
                             ToolTipService.HorizontalOffset="-10"
                             ToolTipService.VerticalOffset="-3" />
 
                         <local:MyRadioBox
-                            Grid.Row="3" Grid.Column="0"
+                            Grid.Row="2" Grid.Column="0"
                             Text="{DynamicResource Common.Option.Customize}"
                             Width="110"
                             x:Name="RadioRamType1"
                             Tag="VersionRamType/1"
-                            Margin="0,0,20,0" />
+                            Margin="0,0,20,9" />
+
+                        <TextBlock
+                            Grid.Row="3" Grid.Column="0"
+                            Text="{DynamicResource Setup.Launch.Memory.Max}"
+                            VerticalAlignment="Center"
+                            Margin="0,0,20,9"
+                            ToolTip="{DynamicResource Setup.Launch.Memory.Max.ToolTip}" />
 
                         <local:MySlider
                             Grid.Row="3" Grid.Column="1"
@@ -145,7 +153,24 @@
                             Tag="VersionRamCustom"
                             MaxValue="49"
                             Value="13"
-                            Margin="0,0,12,0" />
+                            Margin="0,0,12,9" />
+
+                        <TextBlock
+                            Grid.Row="4" Grid.Column="0"
+                            Text="{DynamicResource Setup.Launch.Memory.Initial}"
+                            VerticalAlignment="Center"
+                            Margin="0,0,20,0"
+                            ToolTip="{DynamicResource Setup.Launch.Memory.Initial.ToolTip}" />
+
+                        <local:MySlider
+                            Grid.Row="4" Grid.Column="1"
+                            IsEnabled="False"
+                            x:Name="SliderRamInitialCustom"
+                            Tag="VersionRamCustomInitial"
+                            MaxValue="49"
+                            Value="0"
+                            Margin="0,0,12,0"
+                            ToolTip="{DynamicResource Setup.Launch.Memory.Initial.ToolTip}" />
                     </Grid>
                     <Grid x:Name="PanRamDisplay" Margin="0,11,2,0" SnapsToDevicePixels="True">
                         <Grid.ColumnDefinitions>

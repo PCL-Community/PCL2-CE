@@ -1135,10 +1135,22 @@ public static class ModLaunch
         var maxHeapArg = Math.Floor(totalRamMb).ToString(CultureInfo.InvariantCulture);
         dataList.Add("-Xmn" + Math.Floor(totalRamMb * 0.15).ToString(CultureInfo.InvariantCulture) + "m");
         dataList.Add("-Xmx" + maxHeapArg + "m");
-        // #3282: 固定堆大小时追加 -Xms 使其等于 -Xmx（复用同一数值以保持一致），隐式禁用内存归还降低延迟抖动、利于 ZGC。
         // 若 dataList 中已存在 -Xms（例如用户自定义参数已设）则跳过，避免重复/冲突。
-        if (Config.Launch.LockMemory && !dataList.Any(d => d.Contains("-Xms", StringComparison.OrdinalIgnoreCase)))
-            dataList.Add("-Xms" + maxHeapArg + "m");
+        if (!dataList.Any(d => d.Contains("-Xms", StringComparison.OrdinalIgnoreCase)))
+        {
+            if (Config.Launch.LockMemory)
+            {
+                // #3282: 固定堆大小时追加 -Xms 使其等于 -Xmx（复用同一数值以保持一致），隐式禁用内存归还降低延迟抖动、利于 ZGC。
+                dataList.Add("-Xms" + maxHeapArg + "m");
+            }
+            else
+            {
+                // #3511: 支持自定义初始堆大小（-Xms），可低于最大堆。
+                var initialRam = PageInstanceSetup.GetInitialRam(ModInstanceList.McMcInstanceSelected);
+                if (initialRam.HasValue)
+                    dataList.Add("-Xms" + Math.Floor(initialRam.Value * 1024d).ToString(CultureInfo.InvariantCulture) + "m");
+            }
+        }
         if (!dataList.Any(d => d.Contains("-Dlog4j2.formatMsgNoLookups=true")))
             dataList.Add("-Dlog4j2.formatMsgNoLookups=true");
     }
@@ -1467,10 +1479,23 @@ public static class ModLaunch
         var maxHeapArg = Math.Floor(PageInstanceSetup.GetRam(ModInstanceList.McMcInstanceSelected,
             !mcLaunchJavaSelected.Installation.Is64Bit) * 1024d);
         dataList.Add("-Xmx" + maxHeapArg + "m");
-        // #3282: 固定堆大小时追加 -Xms 使其等于 -Xmx（复用同一数值以保持一致），隐式禁用内存归还降低延迟抖动、利于 ZGC。
         // 若 dataList 中已存在 -Xms（例如用户自定义参数已设）则跳过，避免重复/冲突。
-        if (Config.Launch.LockMemory && !dataList.Any(d => d.Contains("-Xms", StringComparison.OrdinalIgnoreCase)))
-            dataList.Add("-Xms" + maxHeapArg + "m");
+        if (!dataList.Any(d => d.Contains("-Xms", StringComparison.OrdinalIgnoreCase)))
+        {
+            if (Config.Launch.LockMemory)
+            {
+                // #3282: 固定堆大小时追加 -Xms 使其等于 -Xmx（复用同一数值以保持一致），隐式禁用内存归还降低延迟抖动、利于 ZGC。
+                dataList.Add("-Xms" + maxHeapArg + "m");
+            }
+            else
+            {
+                // #3511: 支持自定义初始堆大小（-Xms），可低于最大堆。
+                var initialRam = PageInstanceSetup.GetInitialRam(ModInstanceList.McMcInstanceSelected,
+                    !mcLaunchJavaSelected.Installation.Is64Bit);
+                if (initialRam.HasValue)
+                    dataList.Add("-Xms" + Math.Floor(initialRam.Value * 1024d).ToString(CultureInfo.InvariantCulture) + "m");
+            }
+        }
         dataList.Add("\"-Djava.library.path=" + GetNativesFolder() + "\"");
         dataList.Add("-cp ${classpath}"); // 把支持库添加进启动参数表
 

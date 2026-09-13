@@ -2771,6 +2771,13 @@
     <sys:String x:Key="Setup.Launch.Memory.Auto.ToolTip">Dynamically adjust the memory allocated to the game based on the installed mods and available system memory.</sys:String>
     <sys:String x:Key="Setup.Launch.Memory.AvailableSuffix">Available: {0} GiB</sys:String>
     <sys:String x:Key="Setup.Launch.Memory.GameAllocation">Game allocation</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.Max">Maximum memory (-Xmx)</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.Max.ToolTip">The maximum heap memory the game can use</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.Initial">Initial memory (-Xms)</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.Initial.ToolTip">The heap memory pre-allocated when the game starts, which can be lower than the maximum heap (-Xmx). Set to 0 to let the JVM decide. Only takes effect when memory allocation is set to Custom, and has no effect when Lock memory allocation is enabled.</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.SuffixBoth">initial {0} GiB, available {1} GiB</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.SuffixInitial">initial {0} GiB</sys:String>
+    <sys:String x:Key="Setup.Launch.Memory.SuffixAvailable">available {0} GiB</sys:String>
     <sys:String x:Key="Setup.Launch.Memory.Title">Game memory</sys:String>
     <sys:String x:Key="Setup.Launch.Memory.UsedTotal">Used / installed memory</sys:String>
     <sys:String x:Key="Setup.Launch.Memory.Warning.Java32Bit">32-bit Java can only allocate up to 1 GiB of memory. It is strongly recommended to use 64-bit Java!</sys:String>
