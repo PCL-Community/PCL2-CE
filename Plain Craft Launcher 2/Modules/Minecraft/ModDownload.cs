@@ -64,8 +64,10 @@ public static class ModDownload
         var indexUrl = (string)(indexInfo["url"] ?? "");
         if (string.IsNullOrEmpty(indexUrl)) return null;
 
+        // 避免下载器先发一次 Range 探测请求，再回退到顺序下载
+        var indexSize = indexInfo["size"] is null ? -1L : (long)indexInfo["size"];
         return new DownloadFile(DlSourceLauncherOrMetaGet(indexUrl), indexAddress,
-            new ModBase.FileChecker(canUseExistsFile: false));
+            new ModBase.FileChecker(actualSize: indexSize, canUseExistsFile: false));
     }
 
     /// <summary>

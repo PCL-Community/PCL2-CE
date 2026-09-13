@@ -2675,10 +2675,19 @@
     <sys:String x:Key="Setup.GameManage.Download.SpeedLimit.ToolTip">Set a download speed cap to prevent other programs that depend on the internet from freezing during downloads.</sys:String>
     <sys:String x:Key="Setup.GameManage.Download.TargetFolder">Target folder</sys:String>
     <sys:String x:Key="Setup.GameManage.Download.TargetFolder.Hint">Go to Launch → Selection → Folder list to change the download target folder.&#xA;Right-click a folder or game instance to open the corresponding folder.</sys:String>
-    <sys:String x:Key="Setup.GameManage.Download.Threads">Max threads</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.Threads">Max concurrent connections</sys:String>
     <sys:String x:Key="Setup.GameManage.Download.Threads.TooManyWarning.Confirm">I see</sys:String>
-    <sys:String x:Key="Setup.GameManage.Download.Threads.TooManyWarning.Message">Setting too many download threads may cause serious lag during downloads.&#xA;64 threads are generally enough for most download needs. Unless you know what you are doing, it is not recommended to set a higher value!</sys:String>
-    <sys:String x:Key="Setup.GameManage.Download.Threads.ToolTip">More threads can speed up rate-limited downloads, but too many may cause serious lag during downloads.&#xA;In general, 64 threads are enough for most download needs.</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.Threads.TooManyWarning.Message">A high connection limit can lead to severe lag or even stricter throttling strategies from the server.&#xA;64 connections are usually sufficient. Do not set it higher unless you know what you are doing!</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.Threads.ToolTip">Limits the total network connections used by all download tasks. 64 connections are usually sufficient.</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.FileConnections">Max connections per file</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.FileConnections.ToolTip">The most connections a large file may use at once. A higher value can help sources that cap each connection, but may also trigger source throttling.</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol">File download protocol</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol.Auto">Automatic (recommended)</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol.Auto.ToolTip">Prefer HTTP/2 for small files and batch downloads, and use HTTP/1.1 for large segmented downloads to balance concurrency and compatibility.</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol.Http11">HTTP/1.1</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol.Http11.ToolTip">Force HTTP/1.1 for all file downloads. This can help environments where independent connections improve large-file throughput.</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol.Http2">Prefer HTTP/2</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol.Http2.ToolTip">Prefer HTTP/2 for all file downloads, falling back to HTTP/1.1 when the source or proxy does not support it.</sys:String>
     <sys:String x:Key="Setup.GameManage.Download.Unlimited">Unlimited</sys:String>
 
     <!-- Setup.Java -->
@@ -3229,7 +3238,7 @@
     <sys:String x:Key="Speed.Error.Copied">Error details copied!</sys:String>
     <sys:String x:Key="Speed.Error.OperationFailed">A task manager operation failed. See the details below.</sys:String>
     <sys:String x:Key="Speed.Progress.RemainingFiles">Remaining files</sys:String>
-    <sys:String x:Key="Speed.Progress.RemainingThreads">Remaining threads</sys:String>
+    <sys:String x:Key="Speed.Progress.RemainingThreads">Active connections</sys:String>
     <sys:String x:Key="Speed.Progress.Speed">Download speed</sys:String>
     <sys:String x:Key="Speed.Progress.Total">Total progress</sys:String>
 

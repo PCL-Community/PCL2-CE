@@ -5,8 +5,26 @@ namespace PCL.Network;
 
 public static class ModNet
 {
-    public const string netDownloadEnd = ".PCLDownloading";
-    public static int NetTaskThreadLimit { get; set; } = 16;
+    public const string NetDownloadEnd = ".PCLDownloading";
+    public const int NetTaskConnectionLimitMax = 256;
+    public const int NetTaskSingleFileConnectionLimitMax = 8;
+    // 主机级限制不再低于全局设置；默认仍由 NetTaskConnectionLimit（64）控制。
+    public const int NetTaskConnectionsPerHostLimit = NetTaskConnectionLimitMax;
+    public const long NetTaskBufferBudgetBytes = 512L * 1024 * 1024;
+
+    /// <summary>所有下载任务共享的最大活跃 HTTP 连接数。</summary>
+    public static int NetTaskConnectionLimit { get; set; } = 64;
+
+    /// <summary>单个大文件可同时使用的最大连接数。</summary>
+    public static int NetTaskSingleFileConnectionLimit { get; set; } = 8;
+
+    [Obsolete("请使用 NetTaskConnectionLimit。")]
+    public static int NetTaskThreadLimit
+    {
+        get => NetTaskConnectionLimit;
+        set => NetTaskConnectionLimit = value;
+    }
+
     public static long NetTaskSpeedLimitLow { get; set; } = 256 * 1024L;
     public static long NetTaskSpeedLimitHigh { get; set; } = -1;
     public static long NetTaskSpeedLimitLeft { get; set; } = -1;

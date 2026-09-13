@@ -31,6 +31,8 @@ public class ModSetup
         // === Tool ===
         Config.Download.ThreadLimitConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
             e => ToolDownloadThread((int)e.Value!)));
+        Config.Download.FileConnectionLimitConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
+            e => ToolDownloadFileConnection((int)e.Value!)));
         Config.Download.SpeedLimitConfig.Observe(new ConfigObserver(ConfigEvent.Changed,
             e => ToolDownloadSpeed((int)e.Value!)));
 
@@ -113,6 +115,7 @@ public class ModSetup
 
         // Tool
         ToolDownloadThread(Config.Download.ThreadLimit);
+        ToolDownloadFileConnection(Config.Download.FileConnectionLimit);
         ToolDownloadSpeed(Config.Download.SpeedLimit);
 
         // UI - Launcher
@@ -195,7 +198,13 @@ public class ModSetup
 
     public static void ToolDownloadThread(int value)
     {
-        ModNet.NetTaskThreadLimit = value + 1;
+        ModNet.NetTaskConnectionLimit = Math.Clamp(value + 1, 1, ModNet.NetTaskConnectionLimitMax);
+    }
+
+    public static void ToolDownloadFileConnection(int value)
+    {
+        ModNet.NetTaskSingleFileConnectionLimit = Math.Clamp(value + 1, 1,
+            ModNet.NetTaskSingleFileConnectionLimitMax);
     }
 
     public static void ToolDownloadSpeed(int value)

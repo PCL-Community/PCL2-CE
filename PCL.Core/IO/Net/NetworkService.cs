@@ -143,6 +143,7 @@ public partial class NetworkService
         AllowAutoRedirect = true,
         MaxAutomaticRedirections = 20,
         UseCookies = false,
+        EnableMultipleHttp2Connections = true,
         ConnectCallback = Config.Network.EnableDoH ? HostConnectionHandler.Instance.GetConnectionAsync : null
     };
 

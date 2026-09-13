@@ -75,8 +75,11 @@ public static partial class Config
     /// </summary>
     [ConfigGroup("Download")] partial class DownloadConfigGroup
     {
+        // 保留原配置键，升级后仍沿用用户已设置的数值（值 + 1 为连接上限）。
         [ConfigItem<int>("ToolDownloadThread", 63)] public partial int ThreadLimit { get; set; }
+        [ConfigItem<int>("ToolDownloadFileConnection", 7)] public partial int FileConnectionLimit { get; set; }
         [ConfigItem<int>("ToolDownloadSpeed", 42)] public partial int SpeedLimit { get; set; }
+        [ConfigItem<DownloadHttpMode>("ToolDownloadHttpMode", DownloadHttpMode.Auto)] public partial DownloadHttpMode HttpMode { get; set; }
         [ConfigItem<int>("ToolDownloadSource", 1)] public partial int FileSource { get; set; }
         [ConfigItem<int>("ToolDownloadVersion", 1)] public partial int VersionListSource { get; set; }
         [ConfigItem<bool>("ToolDownloadAutoSelectVersion", true)] public partial bool AutoSelectInstance { get; set; }

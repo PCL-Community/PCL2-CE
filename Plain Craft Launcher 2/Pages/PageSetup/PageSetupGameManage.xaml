@@ -20,8 +20,11 @@
                             <RowDefinition Height="28" />
                             <RowDefinition Height="7" />
                             <RowDefinition Height="27" />
+                            <RowDefinition Height="7" />
                             <RowDefinition Height="27" />
-                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="27" />
+                            <RowDefinition Height="27" />
+                            <RowDefinition Height="27" />
                             <RowDefinition Height="27" />
                         </Grid.RowDefinitions>
                         <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" Text="{DynamicResource Setup.GameManage.Source.File}" Margin="0,0,25,0" />
@@ -39,24 +42,40 @@
                             <local:MyComboBoxItem Content="{DynamicResource Setup.GameManage.Source.PreferOfficialThenMirror}" IsSelected="True" />
                             <local:MyComboBoxItem Content="{DynamicResource Setup.GameManage.Source.UseOfficial}" />
                         </local:MyComboBox>
-                        <TextBlock Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{DynamicResource Setup.GameManage.Download.Threads}"
+                        <TextBlock VerticalAlignment="Center" Grid.Row="4" HorizontalAlignment="Left" Text="{DynamicResource Setup.GameManage.Download.HttpProtocol}"
                                    Margin="0,0,25,0" />
-                        <local:MySlider x:Name="SliderDownloadThread" Grid.Row="4" Tag="ToolDownloadThread"
+                        <local:MyComboBox x:Name="ComboDownloadHttpMode" Grid.Row="4" Grid.Column="1"
+                                          Tag="ToolDownloadHttpMode" SelectionChanged="ComboChange">
+                            <local:MyComboBoxItem Content="{DynamicResource Setup.GameManage.Download.HttpProtocol.Auto}"
+                                                  ToolTip="{DynamicResource Setup.GameManage.Download.HttpProtocol.Auto.ToolTip}" />
+                            <local:MyComboBoxItem Content="{DynamicResource Setup.GameManage.Download.HttpProtocol.Http11}"
+                                                  ToolTip="{DynamicResource Setup.GameManage.Download.HttpProtocol.Http11.ToolTip}" />
+                            <local:MyComboBoxItem Content="{DynamicResource Setup.GameManage.Download.HttpProtocol.Http2}"
+                                                  ToolTip="{DynamicResource Setup.GameManage.Download.HttpProtocol.Http2.ToolTip}" />
+                        </local:MyComboBox>
+                        <TextBlock Grid.Row="6" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{DynamicResource Setup.GameManage.Download.Threads}"
+                                   Margin="0,0,25,0" />
+                        <local:MySlider x:Name="SliderDownloadThread" Grid.Row="6" Tag="ToolDownloadThread"
                                         PreviewChange="SliderDownloadThread_PreviewChange"
                                         MaxValue="255" Value="63" Grid.Column="1" Change="SliderChange"
                                          ToolTip="{DynamicResource Setup.GameManage.Download.Threads.ToolTip}" />
-                        <TextBlock VerticalAlignment="Center" Grid.Row="5" HorizontalAlignment="Left" Text="{DynamicResource Setup.GameManage.Download.SpeedLimit}"
+                        <TextBlock VerticalAlignment="Center" Grid.Row="7" HorizontalAlignment="Left" Text="{DynamicResource Setup.GameManage.Download.FileConnections}"
                                    Margin="0,0,25,0" />
-                        <local:MySlider x:Name="SliderDownloadSpeed" Grid.Row="5" Tag="ToolDownloadSpeed" MaxValue="42"
+                        <local:MySlider x:Name="SliderDownloadFileConnection" Grid.Row="7" Tag="ToolDownloadFileConnection"
+                                        MaxValue="7" Value="7" Grid.Column="1" Change="SliderChange"
+                                        ToolTip="{DynamicResource Setup.GameManage.Download.FileConnections.ToolTip}" />
+                        <TextBlock VerticalAlignment="Center" Grid.Row="8" HorizontalAlignment="Left" Text="{DynamicResource Setup.GameManage.Download.SpeedLimit}"
+                                   Margin="0,0,25,0" />
+                        <local:MySlider x:Name="SliderDownloadSpeed" Grid.Row="8" Tag="ToolDownloadSpeed" MaxValue="42"
                                         Value="42" Grid.Column="1" Change="SliderChange"
                                          ToolTip="{DynamicResource Setup.GameManage.Download.SpeedLimit.ToolTip}" />
-                        <TextBlock VerticalAlignment="Top" Grid.Row="6" HorizontalAlignment="Left" Text="{DynamicResource Setup.GameManage.Download.TargetFolder}"
+                        <TextBlock VerticalAlignment="Top" Grid.Row="9" HorizontalAlignment="Left" Text="{DynamicResource Setup.GameManage.Download.TargetFolder}"
                                    Margin="0,5,25,5" />
                         <TextBlock Margin="0,5" HorizontalAlignment="Left"
-                                   Text="{DynamicResource Setup.GameManage.Download.TargetFolder.Hint}" Grid.Row="6"
+                                   Text="{DynamicResource Setup.GameManage.Download.TargetFolder.Hint}" Grid.Row="9"
                                    Grid.Column="1" VerticalAlignment="Center" Opacity="0.5" />
-                        <TextBlock Margin="0,5" Grid.Row="7" Text="{DynamicResource Setup.GameManage.Download.InstallBehavior}" />
-                        <Grid Grid.Row="7" Grid.Column="1">
+                        <TextBlock Margin="0,5" Grid.Row="10" Text="{DynamicResource Setup.GameManage.Download.InstallBehavior}" />
+                        <Grid Grid.Row="10" Grid.Column="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />

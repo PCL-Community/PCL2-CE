@@ -2675,10 +2675,19 @@
     <sys:String x:Key="Setup.GameManage.Download.SpeedLimit.ToolTip">设置下载的速度上限，以避免在下载时导致其他需要联网的程序卡死</sys:String>
     <sys:String x:Key="Setup.GameManage.Download.TargetFolder">目标文件夹</sys:String>
     <sys:String x:Key="Setup.GameManage.Download.TargetFolder.Hint">请在 启动 → 实例选择 → 文件夹列表 中更改下载目标文件夹。&#xA;在某个文件夹或游戏实例上右键，即可选择打开对应文件夹。</sys:String>
-    <sys:String x:Key="Setup.GameManage.Download.Threads">最大线程数</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.Threads">最大并发连接数</sys:String>
     <sys:String x:Key="Setup.GameManage.Download.Threads.TooManyWarning.Confirm">我知道了</sys:String>
-    <sys:String x:Key="Setup.GameManage.Download.Threads.TooManyWarning.Message">如果设置过多的下载线程，可能会导致下载时出现非常严重的卡顿。&#xA;一般设置 64 线程即可满足大多数下载需求，除非你知道你在干什么，否则不建议设置更多的线程数！</sys:String>
-    <sys:String x:Key="Setup.GameManage.Download.Threads.ToolTip">线程数越多，限速的文件下载越快，但过高的线程数可能会造成下载时非常严重的卡顿。&#xA;一般而言，64 线程已可以保证足够的下载速度。</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.Threads.TooManyWarning.Message">过高的并发连接数可能导致下载时出现非常严重的卡顿，甚至导致服务器使用更严格的限速策略。&#xA;64 个连接通常已经可以满足需求。除非你知道自己在做什么，否则不建议设置更高的并发连接数！</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.Threads.ToolTip">限制所有下载任务合计使用的网络连接数。64 个连接通常已经足够。</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.FileConnections">单文件最大连接数</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.FileConnections.ToolTip">大文件最多同时使用的连接数。提高该值可能加快被单连接限速的下载，但也有可能更容易被下载源限速。</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol">文件下载协议</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol.Auto">自动选择（推荐）</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol.Auto.ToolTip">小文件和批量下载优先使用 HTTP/2；大文件分段下载使用 HTTP/1.1，以兼顾并发和兼容性。</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol.Http11">HTTP/1.1</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol.Http11.ToolTip">所有文件下载强制使用 HTTP/1.1。适合需要多条独立连接提升大文件速度的网络环境。</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol.Http2">优先使用 HTTP/2</sys:String>
+    <sys:String x:Key="Setup.GameManage.Download.HttpProtocol.Http2.ToolTip">所有文件下载优先使用 HTTP/2；如果下载源或代理不支持，会自动回退到 HTTP/1.1。</sys:String>
     <sys:String x:Key="Setup.GameManage.Download.Unlimited">无限制</sys:String>
 
     <!-- Setup.Java -->
@@ -3229,7 +3238,7 @@
     <sys:String x:Key="Speed.Error.Copied">已复制错误详情！</sys:String>
     <sys:String x:Key="Speed.Error.OperationFailed">任务管理操作失败。请查看错误详情。</sys:String>
     <sys:String x:Key="Speed.Progress.RemainingFiles">剩余文件</sys:String>
-    <sys:String x:Key="Speed.Progress.RemainingThreads">剩余线程</sys:String>
+    <sys:String x:Key="Speed.Progress.RemainingThreads">活动连接</sys:String>
     <sys:String x:Key="Speed.Progress.Speed">下载速度</sys:String>
     <sys:String x:Key="Speed.Progress.Total">总进度</sys:String>
 

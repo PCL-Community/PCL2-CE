@@ -34,21 +34,16 @@ public sealed class NetManager
 
     public long Speed
     {
-        get
-        {
-            lock (LockFiles)
-                return Files.Values.Sum(file => file.Speed);
-        }
+        get => DownloadResourceManager.DownloadSpeed;
     }
 
-    public int ThreadCount
+    public int ConnectionCount
     {
-        get
-        {
-            lock (LockFiles)
-                return Files.Values.Sum(file => file.ActiveThreads);
-        }
+        get => DownloadResourceManager.ActiveConnectionCount;
     }
+
+    [Obsolete("请使用 ConnectionCount。")]
+    public int ThreadCount => ConnectionCount;
 
     public void Start(PCL.Network.Loaders.LoaderDownload task)
     {
