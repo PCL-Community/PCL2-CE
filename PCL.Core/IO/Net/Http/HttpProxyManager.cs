@@ -45,53 +45,56 @@ public class HttpProxyManager : IWebProxy, IDisposable
         Socks
     }
 
-    private record ProxyItem
-    {
-        public ProxyProtocol Protocol;
-        public required string Address;
-    }
+    private sealed record ProxyItem(ProxyProtocol Protocol, string Address);
 
     private static ProxyItem[] _GetProxyFromString(string? proxyString)
     {
         if (proxyString.IsNullOrWhiteSpace()) return [];
 
-        var ret = new List<ProxyItem>();
-
-        // 形式：http=192.168.1.100:8080;socks=192.168.1.100:1080
+        // 含 '=' 的形式：http=192.168.1.100:8080;socks=192.168.1.100:1080;ftp=127.0.0.1:124
+        // 也可以是 http=http://127.0.0.1:10808
         if (proxyString.Contains('='))
         {
-            foreach (var segment in proxyString.Split(';', StringSplitOptions.RemoveEmptyEntries))
+            var items = new List<ProxyItem>();
+            foreach (var segment in proxyString.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
-                var eqIndex = segment.IndexOf('=');
-                if (eqIndex <= 0 || eqIndex >= segment.Length - 1)
-                    continue;
-
-                var protocolStr = segment[..eqIndex].Trim();
-                var address = segment[(eqIndex + 1)..].Trim();
-
-                if (string.IsNullOrWhiteSpace(address))
-                    continue;
-
-                ret.Add(new ProxyItem { Protocol = _ParseProtocol(protocolStr), Address = address });
+                if (_ParseKeyValueSegment(segment) is { } item)
+                    items.Add(item);
             }
-
-            return ret.Count > 0 ? [.. ret] : [];
+            return [.. items];
         }
 
         // 形式：http://127.0.0.1:1145/ 或者单纯 127.0.0.1:1145
-        if (Uri.TryCreate(proxyString, new UriCreationOptions(), out var proxyAddr))
+        var proxy = _ParseAddress(proxyString.Trim());
+        return proxy is null ? [] : [proxy];
+    }
+
+    /// <summary>解析 <c>protocol=address</c> 形式的段；格式非法时返回 null 以便忽略该段</summary>
+    private static ProxyItem? _ParseKeyValueSegment(string segment)
+    {
+        var eqIndex = segment.IndexOf('=');
+        // 缺少 '='、协议名或地址的段视为非法，直接忽略
+        if (eqIndex <= 0 || eqIndex >= segment.Length - 1) return null;
+
+        return _ParseAddress(
+            segment[(eqIndex + 1)..].Trim(),
+            _ParseProtocol(segment[..eqIndex].Trim()));
+    }
+
+    /// <summary>解析单个代理地址：支持带 scheme 的地址（如 http://127.0.0.1:10808）与纯 host:port 地址（如 127.0.0.1:1145）</summary>
+    private static ProxyItem? _ParseAddress(string address, ProxyProtocol? protocol = null)
+    {
+        if (address.IsNullOrWhiteSpace()) return null;
+
+        // 能解析出主机名的地址，规范化为 host:port
+        if (Uri.TryCreate(address, new UriCreationOptions(), out var uri) && !uri.Host.IsNullOrEmpty())
         {
-            var address = proxyAddr.Port > 0
-                ? $"{proxyAddr.Host}:{proxyAddr.Port}"
-                : proxyAddr.Host;
-            ret.Add(new ProxyItem { Protocol = _ParseProtocol(proxyAddr.Scheme), Address = address });
-        }
-        else
-        {
-            ret.Add(new ProxyItem { Protocol = ProxyProtocol.Http, Address = proxyString.Trim() });
+            var hostPort = uri.Port > 0 ? $"{uri.Host}:{uri.Port}" : uri.Host;
+            return new ProxyItem(protocol ?? _ParseProtocol(uri.Scheme), hostPort);
         }
 
-        return [.. ret];
+        // 纯 host:port 地址（无法作为 URI 解析），按指定协议（默认 Http）原样使用
+        return new ProxyItem(protocol ?? ProxyProtocol.Http, address);
     }
 
     private static ProxyProtocol _ParseProtocol(string scheme)
@@ -117,14 +120,13 @@ public class HttpProxyManager : IWebProxy, IDisposable
                 // parse
                 var proxies = _GetProxyFromString(systemProxyString);
 
-                // filter
-                if (proxies.Length == 0 || !proxies.Any(static x => x.Protocol.Equals(ProxyProtocol.Http))) isSystemProxyEnabled = 0;
-                var selectedProxy = proxies.FirstOrDefault(static x => x.Protocol.Equals(ProxyProtocol.Http));
-
-                // apply
-                _systemWebProxy.Address = (isSystemProxyEnabled == 0 || selectedProxy!.Address.IsNullOrEmpty())
-                    ? null
-                    : new Uri($"http://{selectedProxy.Address}");
+                // 仅当系统代理已启用且存在有效的 HTTP 代理时才应用
+                var selectedProxy = proxies.FirstOrDefault(static x => x.Protocol == ProxyProtocol.Http);
+                _systemWebProxy.Address = selectedProxy is null
+                    || selectedProxy.Address.IsNullOrEmpty()
+                    || isSystemProxyEnabled == 0
+                        ? null
+                        : new Uri($"http://{selectedProxy.Address}");
 
                 LogWrapper.Info("Proxy",
                     $"已从操作系统更新代理设置，系统代理状态：{isSystemProxyEnabled}|{systemProxyString}");
