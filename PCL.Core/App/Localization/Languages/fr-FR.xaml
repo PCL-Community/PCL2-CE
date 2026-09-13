@@ -1,13 +1,257 @@
-<!-- Formatted by xaml-lang-formatter at 2026-06-28T17:16:52. -->
-<ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="clr-namespace:System;assembly=mscorlib"
-    xml:space="preserve">
+<!-- Formatted by xaml-lang-formatter at 2026-06-28T17:16:52. --><ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib" xml:space="preserve">
 
     <!-- Meta -->
 
     <sys:String x:Key="Meta.Code">fr-FR</sys:String>
     <sys:String x:Key="Meta.Name">Français (France)</sys:String>
+    <sys:String x:Key="Application.Animation.Error.OperationFailed">L'animation a échoué. Veuillez consulter les détails de l'erreur.</sys:String>
+    <sys:String x:Key="Application.Control.Error.OperationFailed">L'opération sur un élément de l'interface a échoué. Veuillez consulter les détails de l'erreur.</sys:String>
+    <sys:String x:Key="Application.Control.Loading.Default">Chargement...</sys:String>
+    <sys:String x:Key="Application.Control.Loading.Failed">Échec du chargement.</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.Message">PCL CE a détecté des problèmes d'environnement au démarrage:
 
+{0}
+
+Si ces problèmes ne sont pas résolus, certaines fonctions risquent de ne pas fonctionner correctement…</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.SocialSoftwareFolder">- PCL CE est en cours d'exécution depuis le dossier de téléchargement de logiciels sociaux tels que Discord, WhatsApp, etc. Veuillez envisager de le déplacer vers un autre emplacement, sinon cela pourrait entraîner la perte des sauvegardes de jeu ou des paramètres</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.System32Bit">- Votre système est en 32 bits, ce qui n'est pas pris en charge par PCL CE ni par les versions récentes de Minecraft. Il est fortement recommandé de réinstaller un système 64 bits avant de jouer</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.TempFolder">- PCL CE est en cours d'exécution dans le dossier temporaire, veuillez extraire PCL CE de l'archive avant de l'utiliser, sinon cela pourrait entraîner la perte des sauvegardes de jeu ou des paramètres</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.Title">Avertissement d'environnement</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.WindowsVersion">- La version de Windows ne répond pas aux exigences recommandées, Windows 10 1809 ou version ultérieure est recommandé, il est conseillé d'envisager une mise à niveau de Windows</sys:String>
+    <sys:String x:Key="Application.InitializationError.Path">Chemin d'accès de PCL CE : {0}</sys:String>
+    <sys:String x:Key="Application.InitializationError.PathUnavailable">Échec de la récupération</sys:String>
+    <sys:String x:Key="Application.InitializationError.Title">Erreur d'initialisation de PCL CE</sys:String>
+    <sys:String x:Key="Application.Loader.Error.OperationFailed">Le chargement de la tâche a échoué. Veuillez consulter les détails de l'erreur.</sys:String>
+    <sys:String x:Key="Common.Dialog.Title">Astuce</sys:String>
+    <sys:String x:Key="Common.Dialog.Warning">Avertissement</sys:String>
+    <sys:String x:Key="Common.Error.InvalidJson">Ce n'est pas un fichier JSON valide</sys:String>
+    <sys:String x:Key="Common.Format.DownloadCount">Téléchargé {0} fois</sys:String>
+    <sys:String x:Key="Common.Hint.Copied">Copié avec succès !</sys:String>
+    <sys:String x:Key="Common.Hint.CopyFailed">Impossible de copier le texte, le presse-papiers est peut-être occupé par un autre programme.</sys:String>
+    <sys:String x:Key="Common.Hint.DoNotShowAgain">Ne plus afficher</sys:String>
+    <sys:String x:Key="Common.Hint.FilesPasted">Collé {0} fichiers et {1} dossiers.</sys:String>
+    <sys:String x:Key="Common.Option.All">Tout</sys:String>
+    <sys:String x:Key="Common.Option.Auto">Automatique</sys:String>
+    <sys:String x:Key="Common.Option.Customize">Personnalisé</sys:String>
+    <sys:String x:Key="Common.Option.Default">Par défaut</sys:String>
+    <sys:String x:Key="Common.Option.IDontKnow">Je ne sais pas</sys:String>
+    <sys:String x:Key="Common.Option.No">Non</sys:String>
+    <sys:String x:Key="Common.Option.Yes">Oui</sys:String>
+    <sys:String x:Key="Common.State.Loading">Chargement...</sys:String>
+    <sys:String x:Key="Common.State.Unknown">Inconnu</sys:String>
+    <sys:String x:Key="Common.Status.Cancelled">Annulé !</sys:String>
+    <sys:String x:Key="Common.Status.Failure">Échec :</sys:String>
+    <sys:String x:Key="Common.Status.Success">Succès !</sys:String>
+    <sys:String x:Key="Common.Action.Agree">Accepter</sys:String>
+    <sys:String x:Key="Common.Action.Back">Retour</sys:String>
+    <sys:String x:Key="Common.Action.Cancel">Annuler</sys:String>
+    <sys:String x:Key="Common.Action.Close">Fermer</sys:String>
+    <sys:String x:Key="Common.Action.Confirm">Confirmer</sys:String>
+    <sys:String x:Key="Common.Action.Continue">Continuer</sys:String>
+    <sys:String x:Key="Common.Action.Copy">Copier</sys:String>
+    <sys:String x:Key="Common.Format.Number.Digit1">{0}k</sys:String>
+    <sys:String x:Key="Common.Format.Number.Digit2">{0}M</sys:String>
+    <sys:String x:Key="Common.Format.TimeSpan.Future">dans {0}</sys:String>
+    <sys:String x:Key="Application.Control.Loading.NetworkUnstable">Les conditions réseau sont mauvaises. Veuillez réessayer plus tard ou utiliser un VPN pour améliorer la connexion.</sys:String>
+    <sys:String x:Key="Application.Control.Loading.UnknownError">Erreur inconnue</sys:String>
+    <sys:String x:Key="Application.Control.MessageBox.Error.OperationFailed">L'opération de la boîte de dialogue de message a échoué. Veuillez consulter les détails de l'erreur ci-dessous.</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.IKnow">J'ai compris</sys:String>
+    <sys:String x:Key="Common.Action.Decline">Refuser</sys:String>
+    <sys:String x:Key="Common.Action.Delete">Supprimer</sys:String>
+    <sys:String x:Key="Common.Action.Download">Télécharger</sys:String>
+    <sys:String x:Key="Common.Action.Initialize">Initialiser</sys:String>
+    <sys:String x:Key="Common.Action.Install">Installer</sys:String>
+    <sys:String x:Key="Common.Action.Open">Ouvrir</sys:String>
+    <sys:String x:Key="Common.Action.OpenFolder">Ouvrir le dossier</sys:String>
+    <sys:String x:Key="Common.Action.Overwrite">Remplacer</sys:String>
+    <sys:String x:Key="Common.Action.Refresh">Actualiser</sys:String>
+    <sys:String x:Key="Common.Action.Reset">Réinitialiser</sys:String>
+    <sys:String x:Key="Common.Action.Search">Rechercher</sys:String>
+    <sys:String x:Key="Common.Action.UpdateLog">Journal des modifications</sys:String>
+    <sys:String x:Key="Common.Installation.Cleanroom">Cleanroom</sys:String>
+    <sys:String x:Key="Common.Installation.Fabric">Fabric</sys:String>
+    <sys:String x:Key="Common.Installation.FabricApi">Fabric API</sys:String>
+    <sys:String x:Key="Common.Installation.Forge">Forge</sys:String>
+    <sys:String x:Key="Common.Installation.Iris">Iris</sys:String>
+    <sys:String x:Key="Common.Installation.LabyMod">LabyMod</sys:String>
+    <sys:String x:Key="Common.Installation.LegacyFabric">Legacy Fabric</sys:String>
+    <sys:String x:Key="Common.Installation.LegacyFabricApi">Legacy Fabric API</sys:String>
+    <sys:String x:Key="Common.Installation.LiteLoader">LiteLoader</sys:String>
+    <sys:String x:Key="Common.Installation.Minecraft">Minecraft</sys:String>
+    <sys:String x:Key="Common.Installation.NeoForge">NeoForge</sys:String>
+    <sys:String x:Key="Common.Installation.OptiFabric">OptiFabric</sys:String>
+    <sys:String x:Key="Common.Installation.OptiFine">OptiFine</sys:String>
+    <sys:String x:Key="Common.Installation.Quilt">Quilt</sys:String>
+    <sys:String x:Key="Config.Error.InvalidFormat.RecoveryMessage">L'initialisation de la configuration a échoué lors de l'étape {0}.
+
+Le fichier de configuration situé à {1} contient des données invalides et a été sauvegardé vers {2}.
+Pour éviter que le problème ne se reproduise, PCL CE a tenté de restaurer une version précédente si elle était disponible. Si vous avez modifié le fichier de configuration manuellement, corrigez le problème et remplacez le fichier actuel.
+
+Si vous ne savez pas ce qui s'est passé, vous pouvez ignorer ce message pour le moment. Après le redémarrage de PCL CE, les paramètres concernés peuvent revenir à leurs valeurs par défaut, mais l'utilisation normale ne devrait pas être affectée.</sys:String>
+    <sys:String x:Key="Config.Error.LoadFailed.DebugMessage">L'initialisation de la configuration a échoué lors de l'étape {0}.
+
+Le système de configuration n'a pas pu être initialisé. Corrigez le problème et redémarrez PCL CE.</sys:String>
+    <sys:String x:Key="Config.Error.LoadFailed.Message">Le système de configuration a échoué lors de l'étape {0}.</sys:String>
+    <sys:String x:Key="Config.Error.LoadFailed.Title">Échec de l'initialisation de la configuration</sys:String>
+    <sys:String x:Key="Config.Error.SaveFailed.Message">Impossible d'enregistrer le fichier de configuration.
+
+Chemin : {0}</sys:String>
+    <sys:String x:Key="Config.Error.SaveFailed.Title">Échec de l'enregistrement du fichier de configuration</sys:String>
+    <sys:String x:Key="Crash.Analysis.Error.Failed">L'analyse du crash a échoué. Veuillez consulter les détails de l'erreur ci-dessous.</sys:String>
+    <sys:String x:Key="Crash.Dialog.Button.ExportReport">Exporter le rapport de crash</sys:String>
+    <sys:String x:Key="Crash.Dialog.Button.GoToModify">Aller modifier les paramètres</sys:String>
+    <sys:String x:Key="Crash.Dialog.Button.OpenLog">Modifier les paramètres</sys:String>
+    <sys:String x:Key="Crash.Dialog.Title.Auto">Minecraft a rencontré une erreur</sys:String>
+    <sys:String x:Key="Crash.Dialog.Title.Manual">Résultat de l'analyse du rapport de crash</sys:String>
+    <sys:String x:Key="Crash.Export.Failed.CopyDetails">Copier les détails</sys:String>
+    <sys:String x:Key="Crash.Export.Failed.Message">Impossible d'exporter le rapport de crash.
+
+Chemin cible : {0}</sys:String>
+    <sys:String x:Key="Crash.Export.Failed.MessageWithoutPath">Impossible d'exporter le rapport de crash, et le chemin cible est indisponible.</sys:String>
+    <sys:String x:Key="Crash.Export.Failed.Title">Échec de l'exportation du rapport de crash</sys:String>
+    <sys:String x:Key="Crash.Presentation.ListItem"> - {0}</sys:String>
+    <sys:String x:Key="Crash.Presentation.ReasonOnly">Cause
+{0}</sys:String>
+    <sys:String x:Key="Crash.Presentation.WithFollowUps">{0}
+
+{1}</sys:String>
+    <sys:String x:Key="Crash.Presentation.WithSuggestion">Cause
+{0}
+
+Ce que vous pouvez essayer
+{1}</sys:String>
+    <sys:String x:Key="Crash.Reason.ConfirmedMod.Multiple">Les mods suivants ont causé l'erreur:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Reason.ConfirmedMod.Single">Le mod {0} a causé l'erreur.</sys:String>
+    <sys:String x:Key="Crash.Reason.DuplicateMods.Known">Des mods en double ont été détectés:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Reason.DuplicateMods.Unknown">Des mods en double peuvent être installés.</sys:String>
+    <sys:String x:Key="Crash.Reason.ExtractedModFile">Un fichier de mod extrait a été détecté.</sys:String>
+    <sys:String x:Key="Crash.Reason.FabricError.Generic">Fabric a peut-être fourni un message d'erreur.</sys:String>
+    <sys:String x:Key="Crash.Reason.FabricError.WithDetail">Fabric a fourni le message d'erreur suivant:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Reason.FabricSolution.Generic">Fabric a peut-être fourni une solution.</sys:String>
+    <sys:String x:Key="Crash.Reason.FabricSolution.WithDetail">Fabric a fourni la solution suivante:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Reason.FileOrContentValidationFailed">Certains fichiers ou contenus n'ont pas passé la validation.</sys:String>
+    <sys:String x:Key="Crash.Reason.ForgeError.Generic">Forge a peut-être fourni un message d'erreur.</sys:String>
+    <sys:String x:Key="Crash.Reason.ForgeError.WithDetail">Forge a fourni le message d'erreur suivant:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Reason.GraphicsDriver.Generic">Le pilote graphique peut empêcher le jeu de fonctionner correctement.</sys:String>
+    <sys:String x:Key="Crash.Reason.GraphicsDriver.IntelOrIntegrated">Il y a peut-être un problème avec le pilote graphique, ou le jeu n'utilise pas le GPU dédié.</sys:String>
+    <sys:String x:Key="Crash.Reason.IncompatibleMods.Generic">Les mods installés peuvent être incompatibles.</sys:String>
+    <sys:String x:Key="Crash.Reason.IncompatibleMods.WithDetail">Les mods installés sont incompatibles:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Reason.IncompleteForgeInstallation">L'installation de Forge est incomplète et des fichiers nécessaires sont manquants.</sys:String>
+    <sys:String x:Key="Crash.Reason.InvalidModFileName">Un nom de fichier de mod contient des caractères spéciaux que Java ne peut pas utiliser.</sys:String>
+    <sys:String x:Key="Crash.Reason.JavaIncompatible">La version Java sélectionnée est incompatible avec le jeu ou les mods.</sys:String>
+    <sys:String x:Key="Crash.Reason.JavaTooNew">La version Java sélectionnée est trop récente pour ce jeu ou ce chargeur.</sys:String>
+    <sys:String x:Key="Crash.Reason.MissingDependency.Generic">Certains mods manquent de dépendances ou ne correspondent pas à la version actuelle de Minecraft.</sys:String>
+    <sys:String x:Key="Crash.Reason.MissingDependency.WithDetail">Certains mods manquent de dépendances ou ne correspondent pas à la version actuelle de Minecraft:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Reason.MissingMixinBootstrap">MixinBootstrap est manquant, le jeu ne peut donc pas continuer le chargement.</sys:String>
+    <sys:String x:Key="Crash.Reason.ModConfigCrash.Simple">La configuration du mod {0} n'a pas pu être lue.</sys:String>
+    <sys:String x:Key="Crash.Reason.ModConfigCrash.WithConfig">Le fichier de configuration {1} du mod {0} n'a pas pu être lu.</sys:String>
+    <sys:String x:Key="Crash.Reason.ModInitializationFailed.Multiple">Les mods suivants n'ont pas pu être initialisés:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Reason.ModInitializationFailed.Single">Le mod {0} n'a pas pu être initialisé.</sys:String>
+    <sys:String x:Key="Crash.Reason.ModLoaderError.Generic">Le chargeur de mods a peut-être fourni un message d'erreur.</sys:String>
+    <sys:String x:Key="Crash.Reason.ModLoaderError.WithDetail">Le chargeur de mods a fourni le message d'erreur suivant:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Reason.ModLoaderIncompatible">La version du chargeur de mods est incompatible avec les mods:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Reason.ModMixinFailed.Multiple">L'injection Mixin a échoué pour les mods suivants:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Reason.ModMixinFailed.None">L'injection Mixin a échoué pour un ou plusieurs mods.</sys:String>
+    <sys:String x:Key="Crash.Reason.ModMixinFailed.Single">L'injection Mixin a échoué pour le mod {0}.</sys:String>
+    <sys:String x:Key="Crash.Reason.ModRequiresJava11">Certains mods installés nécessitent Java 11 ou une version ultérieure.</sys:String>
+    <sys:String x:Key="Crash.Reason.MultipleForgeInInstanceJson">L'instance JSON contient plusieurs arguments de version Forge.</sys:String>
+    <sys:String x:Key="Crash.Reason.NightConfigBug">Night Config a rencontré une erreur lors de la lecture des fichiers de configuration.</sys:String>
+    <sys:String x:Key="Crash.Reason.NoAnalyzableFile">Le jeu a rencontré un problème, mais PCL CE n'a pas pu trouver de fichiers journaux associés à analyser.</sys:String>
+    <sys:String x:Key="Crash.Reason.OldForgeNewJavaIncompatible">Une ancienne version de Forge est incompatible avec la version Java sélectionnée.</sys:String>
+    <sys:String x:Key="Crash.Reason.OpenGl1282">Un pack de shaders ou de ressources peut avoir déclenché l'erreur OpenGL 1282.</sys:String>
+    <sys:String x:Key="Crash.Reason.OptiFineForgeIncompatible">OptiFine peut être incompatible avec la version actuelle de Forge ou de Minecraft.</sys:String>
+    <sys:String x:Key="Crash.Reason.OptiFineWorldLoadCrash">La version d'OptiFine sélectionnée a pu causer l'échec du chargement du monde.</sys:String>
+    <sys:String x:Key="Crash.Reason.OutOfMemory">Minecraft a manqué de mémoire.</sys:String>
+    <sys:String x:Key="Crash.Reason.ResourcePackTooLarge">La résolution du pack de ressources est peut-être trop élevée, ou la carte graphique n'est pas assez puissante.</sys:String>
+    <sys:String x:Key="Crash.Reason.ShadersModWithOptiFine">Shaders Mod et OptiFine sont tous deux installés.</sys:String>
+    <sys:String x:Key="Crash.Reason.SpecificBlock.Multiple">Certains blocs dans le monde peuvent avoir causé l'erreur.</sys:String>
+    <sys:String x:Key="Crash.Reason.SpecificBlock.Single">Le bloc {0} peut avoir causé l'erreur.</sys:String>
+    <sys:String x:Key="Launch.Homepage.LoadFailed.Message">Le contenu de la page d'accueil est mal formé. Veuillez vérifier les informations d'erreur suivantes:
+{0}</sys:String>
+    <sys:String x:Key="Launch.Homepage.LoadFailed.Retry">Réessayer</sys:String>
+    <sys:String x:Key="Launch.Homepage.SlowWarning">Le chargement de la page d'accueil est trop lent ({0} secondes). Veuillez signaler ce problème à l'auteur de la page d'accueil, ou cesser temporairement d'utiliser cette page.</sys:String>
+    <sys:String x:Key="Crash.Reason.SpecificEntity.Multiple">Certaines entités dans le monde peuvent avoir causé l'erreur.</sys:String>
+    <sys:String x:Key="Crash.Reason.SpecificEntity.Single">L'entité {0} peut avoir causé l'erreur.</sys:String>
+    <sys:String x:Key="Crash.Reason.StackKeyword.Multiple">PCL CE a trouvé des mots-clés possiblement liés dans la trace de pile d'erreurs:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Reason.StackKeyword.Single">PCL CE a trouvé un mot-clé possiblement lié dans la trace de pile d'erreurs: {0}</sys:String>
+    <sys:String x:Key="Crash.Reason.SuspectedMod.Multiple">Le rapport de crash soupçonne que les mods suivants ont causé l'erreur:
+{0}</sys:String>
+    <sys:String x:Key="Common.Format.TimeSpan.Past">il y a {0}</sys:String>
+    <sys:String x:Key="Common.Action.GotIt">J'ai compris</sys:String>
+    <sys:String x:Key="Crash.Reason.SuspectedMod.Single">Le rapport de crash soupçonne que le mod {0} a causé l'erreur.</sys:String>
+    <sys:String x:Key="Crash.Reason.TooManyModsIdLimit">Trop de mods sont installés, dépassant la limite d'ID d'une ancienne version de Minecraft.</sys:String>
+    <sys:String x:Key="Crash.Reason.Unknown.Auto">PCL CE n'a pas pu déterminer la cause exacte du crash.</sys:String>
+    <sys:String x:Key="Crash.Reason.Unknown.Manual">PCL CE n'a pas pu déterminer la cause de cette erreur.</sys:String>
+    <sys:String x:Key="Crash.Reason.UnknownFinding">PCL CE a détecté une cause d'erreur sans détails: {0}</sys:String>
+    <sys:String x:Key="Crash.Reason.UsingJdk">Le jeu utilise peut-être un JDK, ou la version Java sélectionnée est peut-être trop récente.</sys:String>
+    <sys:String x:Key="Crash.Reason.UsingOpenJ9">Le runtime Java OpenJ9 peut être incompatible avec le jeu, les mods ou le chargeur.</sys:String>
+    <sys:String x:Key="Crash.Reason.VeryShortOutput">La sortie du jeu est trop courte pour que PCL CE puisse l'analyser. Sortie brute:
+{0}</sys:String>
+    <sys:String x:Key="Crash.Report.Export.Success">Rapport de crash exporté!</sys:String>
+    <sys:String x:Key="Crash.Report.SaveDialog.DefaultFileName">Rapport de crash-{0}.zip</sys:String>
+    <sys:String x:Key="Crash.Report.SaveDialog.Filter">Rapport de crash Minecraft (.zip)|.zip</sys:String>
+    <sys:String x:Key="Crash.Report.SaveDialog.Title">Sélectionner l'emplacement d'enregistrement</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.Cpu">CPU：{0}</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.EnvironmentSection">‐ Informations sur l'environnement -</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.Gpu">GPU {0}:{1} ({2} MiB, {3})</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.InstanceSection">‐ Informations sur l'instance -</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.LauncherId">Code d'identification:{0}</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.LauncherVersion">Version de PCL CE: {0}</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.MemoryAllocation">Allocation de mémoire (mémoire allouée / mémoire physique installée): {0} / {1} GiB ({2} MiB)</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.MinecraftFolder">Dossier Minecraft: {0}</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.OperatingSystem">Système d'exploitation: {0} (64 bits: {1}, ARM64: {2})</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.ProfileName">Nom du profil: {0} (méthode de connexion: {1})</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.ProfileSection">- Informations sur le profil -</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.SelectedJava">VM Java sélectionnée: {0}</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.ModListDirectory">Répertoire: {0}</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateEntry">{0} [{1}] &lt;-&gt; intégré dans {2} ({3})</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateHeuristic">(Correspondance par ID de mod, peut contenir des faux positifs.)</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateDescription">Ces mods peuvent entrer en conflit avec leurs copies intégrées et provoquer des crashs:</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateNone">Aucun</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.DuplicateSection">=== Mods potentiellement dupliqués (installés séparément et intégrés via Jar-in-Jar) ===</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.JarInJarNone">Aucune information Jar-in-Jar trouvée</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.JarInJarSection">=== Informations Jar-in-Jar (mods activés uniquement) ===</sys:String>
+    <sys:String x:Key="Crash.Report.JarInJarMod.ModListSection">=== Liste des mods ===</sys:String>
+    <sys:String x:Key="Crash.Suggestion.DisableTheseMods">Essayez de désactiver ces mods un par un, puis vérifiez si le jeu plante encore.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.DisableThisMod">Essayez de désactiver ce mod, puis vérifiez si le jeu plante encore.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.DuplicateMods">Chaque mod ne doit être installé qu'une seule fois. Supprimez les mods en double et relancez le jeu.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ExtractedModFile">Supprimez les dossiers de mods extraits du dossier mods, puis placez-y les fichiers .jar originaux des mods et réessayez.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.FileOrContentValidationFailed">Supprimez le jeu et les mods associés, puis téléchargez-les à nouveau.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.FollowLoaderInstructions">Suivez les messages du chargeur ci-dessus ou dans le rapport de crash pour résoudre le problème.</sys:String>
+    <sys:String x:Key="Crash.Report.Environment.Log4j2NoLookups">Log4j2 NoLookups：{0}</sys:String>
+    <sys:String x:Key="Crash.Suggestion.GraphicsDriver.Generic">Essayez de mettre à jour ou de rétrograder le pilote graphique. Si nécessaire, passez à une version plus ancienne de Java.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.GraphicsDriver.IntelOrIntegrated">Si l'appareil dispose d'un GPU dédié, utilisez-le pour lancer PCL CE et Minecraft. Vous pouvez aussi mettre à jour ou rétrograder le pilote graphique.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.IncompleteForgeInstallation">Réinitialisez ou réinstallez Forge dans les paramètres de l'instance. Ne supprimez pas le dossier libraries lors de l'empaquetage d'une instance.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.InvalidModFileName">Supprimez ou renommez le fichier de mod concerné afin que son nom ne contienne que des lettres anglaises, des chiffres, des traits d'union, des traits de soulignement et des points.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.JavaIncompatible">Choisissez une version Java adaptée dans les paramètres de lancement selon la version de Minecraft et les exigences des mods.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.JavaTooNew">Dans les paramètres de lancement, passez à une version plus ancienne de Java, puis réessayez.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.LauncherOutdated">Vous utilisez une version obsolète de PCL CE. La mise à jour de PCL CE peut résoudre ce problème: Paramètres → Lanceur → Vérifier les mises à jour.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.MissingMixinBootstrap">Vérifiez que MixinBootstrap, le chargeur de mods et les dépendances associées sont correctement installés.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ModConfigCrash">Essayez de supprimer le fichier de configuration de ce mod, puis relancez le jeu. Si nécessaire, mettez à jour ou désactivez le mod.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ModLoaderIncompatible">Ouvrez les paramètres de l'instance et ajustez ou réinstallez la version du chargeur de mods.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ModMixinFailed">Désactivez les mods un par un pour identifier celui qui est incompatible avec l'environnement actuel ou qui pose problème.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ModRequiresJava11">Dans les paramètres de lancement, passez à Java 11 ou une version ultérieure, puis réessayez.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.MultipleForgeInInstanceJson">Réinitialisez ou réinstallez Forge dans les paramètres de l'instance. N'utilisez pas un autre lanceur pour modifier la version de Forge.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.NightConfigBug">Essayez de supprimer les fichiers de configuration des mods concernés, ou installez Night Config Fixes.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.OldForgeNewJavaIncompatible">Essayez de mettre à jour Forge ou de passer à une version plus ancienne de Java.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.OpenGl1282">Désactivez les packs de shaders et supprimez les packs de ressources récemment ajoutés, puis réessayez.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.OptiFineForgeIncompatible">Check the compatible OptiFine and Forge versions, then reinstall matching versions.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.OptiFineWorldLoadCrash">Essayez une autre version d'OptiFine, ou retirez OptiFine avant de réessayer d'entrer dans le monde.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.OutOfMemory">Augmentez la mémoire allouée au jeu dans les paramètres de lancement, et supprimez les packs de ressources, mods ou packs de shaders gourmands en ressources. Vous pouvez également fermer d'autres applications avant de lancer le jeu.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ResourcePackTooLarge">Supprimez les packs de ressources haute résolution ou réduisez leur résolution. Vous pouvez également mettre à jour le pilote graphique.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.ShadersModWithOptiFine">Supprimez Shaders Mod. OptiFine prend déjà en charge les shaders.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.SpecificBlock.Multiple">Créez un nouveau monde pour vérifier si le jeu fonctionne normalement. Si c'est le cas, les blocs du monde d'origine peuvent être en cause.</sys:String>
+    <sys:String x:Key="Crash.Suggestion.SpecificBlock.Single">Créez un nouveau monde pour vérifier si le jeu fonctionne normalement. Si c'est le cas, supprimez ce bloc avec un éditeur de carte ou désactivez le mod qui le fournit.</sys:String>
 </ResourceDictionary>
