@@ -1,13 +1,22 @@
-<!-- Formatted by xaml-lang-formatter at 2026-06-28T17:16:52. -->
-<ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="clr-namespace:System;assembly=mscorlib"
-    xml:space="preserve">
+<!-- Formatted by xaml-lang-formatter at 2026-06-28T17:16:52. --><ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib" xml:space="preserve">
 
     <!-- Meta -->
 
     <sys:String x:Key="Meta.Code">ja-JP</sys:String>
     <sys:String x:Key="Meta.Name">日本語（日本）</sys:String>
-
+    <sys:String x:Key="Application.Animation.Error.OperationFailed">アニメーション操作に失敗しました。エラーデータを見てください。</sys:String>
+    <sys:String x:Key="Application.Control.Error.OperationFailed">インターフェースコントロールの操作に失敗しました。エラーデータを確認してください。</sys:String>
+    <sys:String x:Key="Application.Control.Loading.Default">読み込み中...</sys:String>
+    <sys:String x:Key="Application.Control.Loading.Failed">ロードに失敗しました</sys:String>
+    <sys:String x:Key="Application.Control.Loading.NetworkUnstable">ネット環境が悪い場合は、後でやり直すか、VPNを使用してネット環境を改善してください。</sys:String>
+    <sys:String x:Key="Application.Control.Loading.UnknownError">未知のエラー</sys:String>
+    <sys:String x:Key="Application.Control.MessageBox.Error.OperationFailed">メッセージウィンドウの操作に失敗しました。エラーデータを見てください。</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.IKnow">わかりました</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.Message">PCL CE は起動時に環境問題を検知しました：
+これらの問題を解決しないと、一部の機能が正常に作動しない可能性があります……</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.SocialSoftwareFolder">- PCL CE 起動器はQQ、WeChat、TIMなどのソーシャルソフトウェアのダウンロードディレクトリで実行中です。他の場所に移動することを検討してください。そうしないと、ゲームのセーブデータや設定が失われる可能性があります</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.System32Bit">- 現在のシステムは32ビットで、PCL CE 起動器や新しいMinecraftに対応しておらず、64ビットシステムに再インストールすることを強くお勧めします</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.TempFolder">- PCL CE は一時ディレクトリで実行中です。PCL CE をアーカイブから展開してからご使用ください。そうしないと、ゲームのセーブデータや設定が失われる可能性があります</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.Title">環境警報</sys:String>
+    <sys:String x:Key="Application.EnvironmentWarning.WindowsVersion">- Windows 版本は推奨要件を満たしておらず、少なくともWindows 10 1809が推奨されており、Windowsシステムのアップグレードを検討することをお勧めします</sys:String>
 </ResourceDictionary>
